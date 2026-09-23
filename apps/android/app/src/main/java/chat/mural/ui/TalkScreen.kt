@@ -239,8 +239,8 @@ fun TalkScreen(
             })
             val micEnabled = !busy && (vm.state != "active" || vm.isVoiceSession)
             Box(Modifier.padding(bottom = if (compact) 15.dp else 19.dp).size(if (compact) 66.dp else 76.dp)
-                .shadow(18.dp, CircleShape, ambientColor = MuralColors.Orange.copy(alpha = .15f), spotColor = MuralColors.Orange.copy(alpha = .25f))
-                .background(Brush.linearGradient(listOf(Color(0xFFFFBA7A), MuralColors.Orange)), CircleShape).clip(CircleShape)
+                .shadow(18.dp, CircleShape, ambientColor = MuralColors.ArcaneMagenta.copy(alpha = .20f), spotColor = MuralColors.ArcaneMagenta.copy(alpha = .30f))
+                .background(Brush.linearGradient(listOf(MuralColors.ArcanePink, MuralColors.ArcaneMagenta)), CircleShape).clip(CircleShape)
                 .testTag("start-conversation").semantics { contentDescription = micDescription }
                 .clickable(enabled = micEnabled, role = Role.Button) {
                     if (vm.state == "active" && vm.isVoiceSession) vm.toggleMute() else onMicrophone()

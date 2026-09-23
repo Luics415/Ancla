@@ -45,24 +45,33 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 object MuralColors {
-    val Cream = Color(0xFFFFF9EE)
-    val CreamRaised = Color(0xFFFFFDF8)
+    // Arcane Palette (Swatches: #344D75, #4A7CA1, #637D98, #B6DDFE, #BAF0FA, #F7C5EB, #D069B8)
+    val ArcaneNavy = Color(0xFF344D75)
+    val ArcaneSteel = Color(0xFF4A7CA1)
+    val ArcaneSlate = Color(0xFF637D98)
+    val ArcaneIce = Color(0xFFB6DDFE)
+    val ArcaneCyan = Color(0xFFBAF0FA)
+    val ArcanePink = Color(0xFFF7C5EB)
+    val ArcaneMagenta = Color(0xFFD069B8)
+
+    val Cream = Color(0xFFF1F5F9)
+    val CreamRaised = Color(0xFFFFFFFF)
     val Surface = Color(0xFFFFFFFF)
-    val SurfaceBright = Color(0xFFFFF2E6)
-    val Ink = Color(0xFF362A22)
-    val Secondary = Color(0xFF735B4A)
-    val Orange = Color(0xFFFF8A4D)
-    val Peach = Color(0xFFFFE3CF)
-    val Lilac = Color(0xFFEEE6FA)
-    val Sage = Color(0xFFEAEFD6)
-    val Butter = Color(0xFFFFF1C7)
-    val Red = Color(0xFFB34B3F)
-    val Panels = listOf(Peach, Lilac, Sage, Butter)
+    val SurfaceBright = Color(0xFFE2EDF8)
+    val Ink = Color(0xFF1E2D44)
+    val Secondary = Color(0xFF536F8B)
+    val Orange = ArcaneMagenta
+    val Peach = ArcanePink
+    val Lilac = ArcaneIce
+    val Sage = ArcaneCyan
+    val Butter = ArcaneSteel
+    val Red = Color(0xFFD13B5E)
+    val Panels = listOf(ArcanePink, ArcaneIce, ArcaneCyan, Color(0xFFDCE8F5))
 }
 
 private val MuralScheme = lightColorScheme(
     primary = MuralColors.Orange,
-    onPrimary = MuralColors.Ink,
+    onPrimary = Color.White,
     primaryContainer = MuralColors.Peach,
     onPrimaryContainer = MuralColors.Ink,
     secondary = MuralColors.Secondary,
@@ -118,11 +127,11 @@ fun MuralTheme(content: @Composable () -> Unit) {
 
 @Composable
 fun Brand(modifier: Modifier = Modifier) {
-    Row(modifier = modifier.semantics(mergeDescendants = true) { contentDescription = "Mural" },
+    Row(modifier = modifier.semantics(mergeDescendants = true) { contentDescription = "Ancla" },
         horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(17.dp).background(Brush.radialGradient(
-            listOf(MuralColors.Butter, MuralColors.Orange), center = Offset.Zero, radius = 48f), CircleShape))
-        Text("mural", style = rounded(30, 38, FontWeight.ExtraBold, -1.6f), color = MuralColors.Ink)
+            listOf(MuralColors.ArcaneCyan, MuralColors.ArcaneMagenta), center = Offset.Zero, radius = 48f), CircleShape))
+        Text("ancla", style = rounded(30, 38, FontWeight.ExtraBold, -1.6f), color = MuralColors.Ink)
     }
 }
 
@@ -163,11 +172,11 @@ fun SoftAnimatedBackground(modifier: Modifier = Modifier) {
     val phase = muralPhase(slow = true)
     Canvas(modifier) {
         drawRect(MuralColors.Cream)
-        drawRect(Brush.radialGradient(listOf(MuralColors.Butter.copy(alpha = .55f), MuralColors.Butter.copy(alpha = 0f)),
+        drawRect(Brush.radialGradient(listOf(MuralColors.ArcaneCyan.copy(alpha = .35f), MuralColors.ArcaneCyan.copy(alpha = 0f)),
             Offset(size.width * (.32f + sin(phase) * .10f), size.height * .22f), size.width * .85f))
-        drawRect(Brush.radialGradient(listOf(MuralColors.Peach.copy(alpha = .70f), MuralColors.Peach.copy(alpha = 0f)),
+        drawRect(Brush.radialGradient(listOf(MuralColors.ArcanePink.copy(alpha = .35f), MuralColors.ArcanePink.copy(alpha = 0f)),
             Offset(size.width * (.52f + cos(phase) * .12f), size.height * (.47f + sin(phase) * .04f)), size.width * .9f))
-        drawRect(Brush.radialGradient(listOf(MuralColors.Lilac.copy(alpha = .45f), MuralColors.Lilac.copy(alpha = 0f)),
+        drawRect(Brush.radialGradient(listOf(MuralColors.ArcaneIce.copy(alpha = .40f), MuralColors.ArcaneIce.copy(alpha = 0f)),
             Offset(size.width * .95f, size.height * (.56f + cos(phase) * .06f)), size.width * .8f))
     }
 }
@@ -186,12 +195,12 @@ fun MuralOrb(energy: Float = 0f, listening: Boolean = false, active: Boolean = t
         withTransform({
             translate(size.width / 2, size.height * .94f); scale(1f, .17f, Offset.Zero)
         }) {
-            drawCircle(Brush.radialGradient(listOf(MuralColors.Orange.copy(alpha = .18f), MuralColors.Orange.copy(alpha = 0f)),
+            drawCircle(Brush.radialGradient(listOf(MuralColors.ArcaneMagenta.copy(alpha = .22f), MuralColors.ArcaneMagenta.copy(alpha = 0f)),
                 center = Offset.Zero, radius = side * .40f), side * .40f, Offset.Zero)
         }
         if (listening) {
-            drawCircle(MuralColors.Orange.copy(alpha = .15f), side * .50f, center, style = Stroke(1.dp.toPx()))
-            drawCircle(MuralColors.Orange.copy(alpha = .08f), side * .54f, center, style = Stroke(1.dp.toPx()))
+            drawCircle(MuralColors.ArcaneCyan.copy(alpha = .38f), side * .50f, center, style = Stroke(1.5.dp.toPx()))
+            drawCircle(MuralColors.ArcaneMagenta.copy(alpha = .24f), side * .55f, center, style = Stroke(1.5.dp.toPx()))
         }
         val points = (0 until 12).map { index ->
             val a = index / 12f * PI.toFloat() * 2
@@ -212,15 +221,15 @@ fun MuralOrb(energy: Float = 0f, listening: Boolean = false, active: Boolean = t
             drawPath(path, shader.brush(size, phase))
         } else {
             clipPath(path) {
-                drawRect(Brush.linearGradient(listOf(MuralColors.Butter, MuralColors.Orange, Color(0xFFFDA079)), Offset.Zero, Offset(size.width * .45f, size.height)))
-                drawRect(Brush.radialGradient(listOf(Color(0xFFCDADEB), Color(0x00CDADEB)), Offset(size.width, size.height * .6f), side * .85f))
-                drawRect(Brush.radialGradient(listOf(Color(0x99FFF5D6), Color(0x00FFF5D6)), Offset(side * .22f, side * .2f), side * .5f))
+                drawRect(Brush.linearGradient(listOf(MuralColors.ArcaneCyan, MuralColors.ArcaneMagenta, MuralColors.ArcaneNavy), Offset.Zero, Offset(size.width * .45f, size.height)))
+                drawRect(Brush.radialGradient(listOf(MuralColors.ArcaneIce, Color(0x00B6DDFE)), Offset(size.width, size.height * .6f), side * .85f))
+                drawRect(Brush.radialGradient(listOf(Color(0x99BAF0FA), Color(0x00BAF0FA)), Offset(side * .22f, side * .2f), side * .5f))
             }
         }
-        drawCircle(Brush.radialGradient(listOf(Color.White, MuralColors.Peach, MuralColors.Orange.copy(alpha = .5f)),
+        drawCircle(Brush.radialGradient(listOf(Color.White, MuralColors.ArcanePink, MuralColors.ArcaneMagenta.copy(alpha = .6f)),
             Offset(center.x + side * .54f - 3.dp.toPx(), center.y - side * .24f - 3.dp.toPx()), 12.dp.toPx()),
             6.dp.toPx(), Offset(center.x + side * .55f, center.y - side * .24f))
-        drawCircle(MuralColors.Peach, 3.5.dp.toPx(), Offset(center.x - side * .54f, center.y + side * .26f))
+        drawCircle(MuralColors.ArcanePink, 3.5.dp.toPx(), Offset(center.x - side * .54f, center.y + side * .26f))
     }
 }
 
@@ -236,12 +245,12 @@ private class OrbMesh {
             float2 uv = point / resolution;
             uv.x += sin(phase) * .055 * sin(uv.y * 3.14159);
             uv.y += cos(phase) * .035 * sin(uv.x * 3.14159);
-            float3 top = row(uv.x, float3(1.,.97,.82), float3(1.,.944,.78), float3(1.,.89,.81));
-            float3 middle = row(uv.x, float3(1.,.70,.42), float3(1.,.54,.30), float3(.80,.68,.93));
-            float3 bottom = row(uv.x, float3(.96,.42,.35), float3(.99,.62,.46), float3(.86,.75,.95));
+            float3 top = row(uv.x, float3(0.73, 0.94, 0.98), float3(0.71, 0.87, 1.0), float3(0.97, 0.77, 0.92));
+            float3 middle = row(uv.x, float3(0.82, 0.41, 0.72), float3(0.29, 0.49, 0.63), float3(0.73, 0.94, 0.98));
+            float3 bottom = row(uv.x, float3(0.20, 0.30, 0.46), float3(0.82, 0.41, 0.72), float3(0.97, 0.77, 0.92));
             float3 color = uv.y < .5 ? mix(top,middle,smoothstep(0.,.5,uv.y)) : mix(middle,bottom,smoothstep(.5,1.,uv.y));
             float2 glow = (uv - float2(.28,.21)) / float2(.27,.12);
-            color = mix(color,float3(1.,1.,1.), .25 * exp(-dot(glow,glow)*1.5));
+            color = mix(color,float3(1.,1.,1.), .30 * exp(-dot(glow,glow)*1.5));
             return half4(color,1.);
         }
     """.trimIndent())

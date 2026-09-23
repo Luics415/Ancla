@@ -56,11 +56,11 @@ fun FloatingNavigation(selected: Int, onSelect: (Int) -> Unit) {
     Box(Modifier.fillMaxWidth().navigationBarsPadding().padding(top = 8.dp, bottom = 12.dp), contentAlignment = Alignment.Center) {
         BoxWithConstraints(Modifier.widthIn(max = 304.dp).fillMaxWidth().height(66.dp).testTag("floating-navigation")
             .shadow(25.dp, CircleShape, ambientColor = MuralColors.Secondary.copy(alpha = .08f), spotColor = MuralColors.Secondary.copy(alpha = .10f))
-            .background(Color(0xFFFDFCF3).copy(alpha = .94f), CircleShape)
+            .background(MuralColors.CreamRaised.copy(alpha = .94f), CircleShape)
             .border(1.5.dp, Color.White.copy(alpha = .85f), CircleShape).padding(4.dp).selectableGroup()) {
             val width = maxWidth / 3
             val offset by animateDpAsState(width * selected, spring(dampingRatio = .88f, stiffness = 350f), label = "tab position")
-            Box(Modifier.offset(x = offset).width(width).fillMaxHeight().background(Color(0xFFEDEBDD), CircleShape))
+            Box(Modifier.offset(x = offset).width(width).fillMaxHeight().background(MuralColors.ArcaneIce.copy(alpha = .40f), CircleShape))
             Row(Modifier.fillMaxSize()) {
                 items.forEachIndexed { index, (title, symbol, tag) ->
                     Column(Modifier.weight(1f).fillMaxHeight().clip(CircleShape).testTag(tag)

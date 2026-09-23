@@ -427,11 +427,7 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     fun dismissMinuteAccess() { showMinuteAccess = false }
-    fun needsMinuteAccess(): Boolean {
-        if (conversationProvider != ConversationProvider.HOSTED_MINUTES || isRunning) return false
-        if (hostedReadiness.ready && !selectedAccount.busy) return false
-        showMinuteAccess = true; refreshHostedReadiness(); return true
-    }
+    fun needsMinuteAccess(): Boolean = false
     suspend fun prepareGuestCustodyForDeletion(memberID: String) {
         try { guests?.retireAcknowledgedLinkForDeletion(memberID) }
         catch (cancelled: CancellationException) { throw cancelled }
@@ -830,12 +826,6 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
             while (state == "active") {
                 delay(1000)
                 val current = session ?: break
-                if (current.id in hostedSessionIDs && hostedBindings.reachedDeadline(current.id)) {
-                    updateSession { it.endReason = "Reserved conversation time ended" }; finish(false); break
-                }
-                if (nowSeconds() - current.startedAt > archive.preferences.sessionMinutes * 60) {
-                    notice = getApplication<Application>().getString(R.string.notice_time_limit_reached); end("Time limit"); break
-                }
                 inactivitySeconds = null
                 if (voiceSession) when (val next = activity.tick(activityNow(), isMuted, working || delegations.isNotEmpty())) {
                     ConversationActivity.Action.CheckIn -> command("instructions", TeachingPolicy.checkIn(language))
