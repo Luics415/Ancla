@@ -62,17 +62,17 @@ class GeminiClient(
             }
         }
 
-        // Use gemini-3.6-flash as primary (reliable, fast, high quota)
-        // Fallback to gemini-3.5-flash or gemini-3.7-flash if needed
+        // Use gemini-3.5-flash-lite as primary (supported by Google API for this key with instant response)
+        // Fallback to gemini-3.1-flash-lite or gemini-3.6-flash
         return try {
-            executeGeminiRequest("gemini-3.6-flash", key, body)
+            executeGeminiRequest("gemini-3.5-flash-lite", key, body)
         } catch (e: Exception) {
-            android.util.Log.w("GeminiClient", "gemini-3.6-flash failed: ${e.message}, falling back to gemini-3.5-flash", e)
+            android.util.Log.w("GeminiClient", "gemini-3.5-flash-lite failed: ${e.message}, falling back to gemini-3.1-flash-lite", e)
             try {
-                executeGeminiRequest("gemini-3.5-flash", key, body)
+                executeGeminiRequest("gemini-3.1-flash-lite", key, body)
             } catch (e2: Exception) {
-                android.util.Log.w("GeminiClient", "gemini-3.5-flash failed: ${e2.message}, falling back to gemini-3.7-flash", e2)
-                executeGeminiRequest("gemini-3.7-flash", key, body)
+                android.util.Log.w("GeminiClient", "gemini-3.1-flash-lite failed: ${e2.message}, falling back to gemini-3.6-flash", e2)
+                executeGeminiRequest("gemini-3.6-flash", key, body)
             }
         }
     }

@@ -245,4 +245,6 @@
     <string name="consent_decline_button">Not now</string>
     <string name="error_guest_secure_storage_unavailable">Ancla couldn\'t restore your saved trial details. Your learning history is still available. Restart the app to try again.</string>
     <string name="error_sign_in_finishing_startup">Ancla is still saving your conversation. Please try signing in again shortly.</string>
+    <string name="accessibility_service_description">Allows activating Ancla assistant via accessibility gestures and shortcuts.</string>
+    <string name="accessibility_service_label">Ancla Assistant</string>
 </resources>

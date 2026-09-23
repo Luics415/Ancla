@@ -93,8 +93,8 @@ fun TalkScreen(
     var lookupSentence by rememberSaveable { mutableStateOf("") }
     var transcript by remember { mutableStateOf<SessionRecord?>(null) }
     val assistantPassage = vm.session?.passages?.lastOrNull { it.speaker == Speaker.assistant }
-    val passage = assistantPassage?.text
-    val caption = passage?.takeIf { it.isNotBlank() } ?: vm.language.greeting
+    val passage: String? = null
+    val caption = vm.language.greeting
     val busy = vm.state == "connecting" || vm.state == "closing"
     val targetScroll = remember(assistantPassage?.id) { ScrollState(0) }
     val meaningScroll = remember(assistantPassage?.id, vm.archive.preferences.meaningLanguage) { ScrollState(0) }
@@ -206,13 +206,6 @@ fun TalkScreen(
                 Text(stringResource(if (vm.meaningLimitReached) R.string.talk_meaning_too_long else R.string.talk_meaning_failed), color = MuralColors.Secondary, style = MaterialTheme.typography.bodySmall)
                 if (!vm.meaningLimitReached) MuralTextButton(onClick = vm::retryMeaning) { Text(stringResource(R.string.talk_retry_meaning_button)) }
             }
-            }
-        }
-        vm.session?.passages?.lastOrNull { it.speaker == Speaker.user }?.let { user ->
-            Row(Modifier.padding(top = 3.dp).testTag("user-caption"), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.history_speaker_you), style = MaterialTheme.typography.labelSmall, color = MuralColors.Secondary)
-                Text(user.text.takeLast(160), style = MaterialTheme.typography.bodySmall, color = MuralColors.Secondary,
-                    textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
         if (vm.session?.topics?.lastOrNull()?.sources?.isNotEmpty() == true) {
@@ -358,7 +351,7 @@ internal fun TypedReplySheet(languageName: String, working: Boolean, onSend: (St
 @Composable
 private fun statusText(state: String, muted: Boolean, voice: Boolean, inactivitySeconds: Int? = null) = when (state) {
     "connecting" -> stringResource(R.string.talk_status_connecting)
-    "active" -> if (inactivitySeconds != null && voice) stringResource(R.string.talk_inactivity_warning, inactivitySeconds) else if (!voice) stringResource(R.string.talk_status_written) else if (muted) stringResource(R.string.talk_status_muted) else stringResource(R.string.talk_status_listening)
+    "active" -> if (inactivitySeconds != null && voice) stringResource(R.string.talk_inactivity_warning, inactivitySeconds) else if (!voice) stringResource(R.string.talk_status_written) else if (muted) stringResource(R.string.talk_status_muted) else "Escuchando (Di \"Ancla\")..."
     "closing" -> stringResource(R.string.talk_status_closing)
     "ended" -> stringResource(R.string.talk_status_ended)
     "failed" -> stringResource(R.string.talk_status_failed)

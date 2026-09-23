@@ -296,6 +296,11 @@ object DeviceAgent {
         val trimmed = rawText.trim()
         val lower = normalize(trimmed)
 
+        // 0. Greeting / Wake word response
+        if (lower == "ancla" || lower == "oye ancla" || lower == "hola ancla" || lower == "hola") {
+            return "¡Hola! Estoy aquí escuchándote. ¿En qué te puedo ayudar?"
+        }
+
         // 1. Device Diagnostics / Performance / Temperature
         if (lower.contains("diagnostico") ||
             (lower.contains("bateria") && (lower.contains("como") || lower.contains("cuanta") || lower.contains("nivel") || lower.contains("estado"))) ||

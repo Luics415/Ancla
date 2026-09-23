@@ -149,7 +149,7 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
             isListeningNative = listening
         },
         onError = { err ->
-            presentError(err)
+            android.util.Log.w("MuralViewModel", "VoiceAgent non-fatal error: $err")
         }
     )
     var isListeningNative by mutableStateOf(false); private set
@@ -720,35 +720,43 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
         session = record; save(record)
     }
     fun start() {
-        if (isRunning || !cloudReady()) return
-        val key = credentials.read()
-        if (key?.startsWith("sk-") == true) {
-            val choice = ConversationProvider.PERSONAL_KEY
-            if (!ConversationProviderPolicy.canStart(choice, hasKey, hostedReadiness)) {
-                presentError(getApplication<Application>().getString(R.string.error_missing_key), true)
-                return
-            }
-            newSession(true); state = "connecting"
-            val id = session!!.id
-            val module = language
-            val instructions = TeachingPolicy.voice(module, learner, selectedTheme, archive.preferences.interests, archive.preferences.meaningLanguage)
-            val history = ConversationHistory.messages(session)
-            connectionJob = viewModelScope.launch {
-                try {
-                    val provider: LiveSessionProvider = api
-                    transport.connect(provider, instructions, history, module.locale)
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (e: Exception) {
-                    if (session?.id == id && isRunning) fail(e, R.string.error_voice_connect_failed)
+        if (isRunning) return
+        viewModelScope.launch {
+            if (!storageReady && loadingHistory) {
+                withTimeoutOrNull(5000) {
+                    while (!storageReady && loadingHistory) delay(50)
                 }
             }
-        } else {
-            // Google Gemini & Local Device Agent Native Voice (SpeechRecognizer + Gemini 3.6 Flash + TTS)
-            newSession(true)
-            state = "active"
-            startDurationChecks()
-            voiceAgent.startListening("es-MX")
+            if (!cloudReady()) return@launch
+            val key = credentials.read()
+            if (key?.startsWith("sk-") == true) {
+                val choice = ConversationProvider.PERSONAL_KEY
+                if (!ConversationProviderPolicy.canStart(choice, hasKey, hostedReadiness)) {
+                    presentError(getApplication<Application>().getString(R.string.error_missing_key), true)
+                    return@launch
+                }
+                newSession(true); state = "connecting"
+                val id = session!!.id
+                val module = language
+                val instructions = TeachingPolicy.voice(module, learner, selectedTheme, archive.preferences.interests, archive.preferences.meaningLanguage)
+                val history = ConversationHistory.messages(session)
+                connectionJob = launch {
+                    try {
+                        val provider: LiveSessionProvider = api
+                        transport.connect(provider, instructions, history, module.locale)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (e: Exception) {
+                        if (session?.id == id && isRunning) fail(e, R.string.error_voice_connect_failed)
+                    }
+                }
+            } else {
+                // Google Gemini & Local Device Agent Native Voice (SpeechRecognizer + Gemini + TTS)
+                newSession(true)
+                state = "active"
+                startDurationChecks()
+                voiceAgent.startListening("es-MX")
+            }
         }
     }
     fun end(reason: String = "Ended by you") {
@@ -805,6 +813,8 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
     }
     private fun command(kind: String, content: String, delegationID: String? = null): Boolean {
         if (state != "active" || !voiceSession) return false
+        val isGemini = credentials.read()?.startsWith("sk-") != true
+        if (isGemini) return true
         return transport.send(buildJsonObject {
             put("type", "session.$kind.append"); put("event_id", UUID.randomUUID().toString())
             put("delegation_id", delegationID?.let(::JsonPrimitive) ?: JsonNull); put("content", content.take(1000))
@@ -846,6 +856,8 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
     }
     private fun startDurationChecks() {
         durationJob?.cancel()
+        val isGemini = credentials.read()?.startsWith("sk-") != true
+        if (isGemini) return
         durationJob = viewModelScope.launch {
             while (state == "active") {
                 delay(1000)

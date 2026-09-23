@@ -245,4 +245,6 @@
     <string name="consent_decline_button">Ahora no</string>
     <string name="error_guest_secure_storage_unavailable">Ancla no pudo restaurar los datos guardados de tu prueba gratuita. Tu historial de aprendizaje sigue disponible. Reinicia la aplicación para intentarlo de nuevo.</string>
     <string name="error_sign_in_finishing_startup">Ancla aún está guardando tu conversación. Intenta iniciar sesión de nuevo dentro de unos instantes.</string>
+    <string name="accessibility_service_description">Permite activar el asistente Ancla mediante gestos y atajos de accesibilidad.</string>
+    <string name="accessibility_service_label">Ancla Asistente</string>
 </resources>
