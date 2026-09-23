@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 onOpenAppSettings = if (microphonePermanentlyDenied) ({ openAppSettings() }) else null,
-                onExport = { exportLauncher.launch("Mural-learning-backup.json") },
+                onExport = { exportLauncher.launch("Ancla-learning-backup.json") },
                 onImport = { importLauncher.launch(arrayOf("application/json", "text/plain")) },
                 account = account,
                 onGoogleSignIn = ::signInWithGoogle,

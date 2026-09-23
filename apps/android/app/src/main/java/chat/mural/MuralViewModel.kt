@@ -228,14 +228,14 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val loaded = withContext(Dispatchers.IO) { repository.load() to credentials.hasKey }
                 archive = loaded.first.archive
-                val providers = providerStore.read(if (loaded.second) ConversationProvider.PERSONAL_KEY else ConversationProvider.HOSTED_MINUTES)
+                val providers = providerStore.read(ConversationProvider.PERSONAL_KEY)
                 hostedSessionIDs = providers.hostedIDs
                 pendingHostedOwnerID = providers.pendingOwnerID
                 accountChangeBlocked = providers.pendingOwnerID != null
                 guests?.recoverAcknowledgedOwnerAtStartup(pendingHostedOwnerID,
                     clear = { owner -> clearAcknowledgedGuestMarker(owner) },
                     onFailure = { presentError(getApplication<Application>().getString(R.string.error_guest_secure_storage_unavailable)) })
-                conversationProvider = providers.selection
+                conversationProvider = ConversationProvider.PERSONAL_KEY
                 finalAssessmentTickets = ConversationProviderPolicy.recoveryTickets(loaded.first.finalAssessments, hostedSessionIDs)
                 hasKey = loaded.second
                 storageReady = true
@@ -382,12 +382,11 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
     /** Called by the minutes/account UI after an explicit provider choice. No failure changes it. */
     fun selectConversationProvider(provider: ConversationProvider) {
         if (isRunning || !storageReady) return
-        conversationProvider = provider
+        conversationProvider = ConversationProvider.PERSONAL_KEY
         viewModelScope.launch {
-            try { providerStore.select(provider) }
+            try { providerStore.select(ConversationProvider.PERSONAL_KEY) }
             catch (_: Exception) { presentError(getApplication<Application>().getString(R.string.provider_preference_save_failed)) }
         }
-        if (provider == ConversationProvider.HOSTED_MINUTES) refreshHostedReadiness()
     }
 
     fun onAccountChanged(account: AccountState) {
@@ -465,7 +464,7 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
                 hostedBindings.delegateOwnerRecovery(guestOwner)
             }
         }
-        if (!safe) showMinuteAccess = true
+        // showMinuteAccess disabled for 100% free mode
         return safe
     }
     private suspend fun availableHostedOwner(): AccountSession? {
@@ -678,15 +677,9 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun start() {
         if (isRunning || !cloudReady()) return
-        val choice = conversationProvider
-        if (choice == ConversationProvider.HOSTED_MINUTES && accountChangeBlocked) {
-            presentError(getApplication<Application>().getString(R.string.hosted_checking_previous))
-            reconcileHostedSessions(); return
-        }
+        val choice = ConversationProvider.PERSONAL_KEY
         if (!ConversationProviderPolicy.canStart(choice, hasKey, hostedReadiness)) {
-            if (choice == ConversationProvider.HOSTED_MINUTES) {
-                showMinuteAccess = true; refreshHostedReadiness()
-            } else presentError(getApplication<Application>().getString(R.string.error_missing_key), true)
+            presentError(getApplication<Application>().getString(R.string.error_missing_key), true)
             return
         }
         newSession(true); state = "connecting"
@@ -694,40 +687,14 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
         val module = language
         val instructions = TeachingPolicy.voice(module, learner, selectedTheme, archive.preferences.interests, archive.preferences.meaningLanguage)
         val history = ConversationHistory.messages(session)
-        if (choice == ConversationProvider.HOSTED_MINUTES) accountChangeBlocked = true
         connectionJob = viewModelScope.launch {
             try {
-                val provider: LiveSessionProvider = if (choice == ConversationProvider.PERSONAL_KEY) api else {
-                    val owner = requireHostedOwner()
-                    if (selectedAccount.busy || owner.accountID != hostedReadiness.accountID) throw HostedFailure.SignInRequired
-                    val hosted = hostedClient(owner.accountID)
-                    val balance = hostedBalance(owner)
-                    if (!balance.canStartConversation || !hosted.available()) throw HostedFailure.Unavailable
-                    // Commit provider provenance and the unresolved-owner marker before making a paid create.
-                    hostedSessionIDs = hostedSessionIDs + id
-                    pendingHostedOwnerID = owner.accountID
-                    withContext(NonCancellable) { providerStore.markHosted(id, owner.accountID) }
-                    object : LiveSessionProvider {
-                        override suspend fun createLiveSession(request: LiveSessionRequest): LiveSessionConnection {
-                            val result = hosted.createLiveSession(request.copy(requestedMilliseconds = archive.preferences.sessionMinutes * 60_000L))
-                            val lease = result.lease as? HostedAPIClient.HostedLease ?: throw HostedFailure.InvalidResponse
-                            withContext(NonCancellable + Dispatchers.Main.immediate) {
-                                hostedBindings.bind(id, owner.accountID, binding(lease))
-                                if (session?.id != id || state != "connecting") {
-                                    hostedBindings.ended(id); reconcileHostedSessions()
-                                }
-                            }
-                            return result
-                        }
-                    }
-                }
+                val provider: LiveSessionProvider = api
                 transport.connect(provider, instructions, history, module.locale)
             } catch (cancelled: CancellationException) {
-                if (choice == ConversationProvider.HOSTED_MINUTES) reconcileHostedSessions()
                 throw cancelled
             } catch (e: Exception) {
                 if (session?.id == id && isRunning) fail(e, R.string.error_voice_connect_failed)
-                if (choice == ConversationProvider.HOSTED_MINUTES) reconcileHostedSessions()
             }
         }
     }
@@ -964,9 +931,6 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
         val clean = text.trim().take(2000)
         if (clean.isEmpty() || working || state in listOf("connecting", "closing") || !cloudReady()) return
         if (state != "active") {
-            if (conversationProvider == ConversationProvider.HOSTED_MINUTES) {
-                presentError(getApplication<Application>().getString(R.string.hosted_typed_start)); return
-            }
             newSession(false); state = "active"; startDurationChecks()
         }
         val id = session!!.id; val token = generation

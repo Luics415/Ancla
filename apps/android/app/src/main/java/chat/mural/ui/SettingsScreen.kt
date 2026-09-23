@@ -69,7 +69,7 @@ import chat.mural.core.UsageSummary
 @Composable
 fun SettingsScreen(vm: MuralViewModel, onExport: () -> Unit, onImport: () -> Unit, onReviewConsent: () -> Unit,
                    onAccount: (() -> Unit)? = null, onDismiss: () -> Unit = {}) {
-    var advanced by rememberSaveable { mutableStateOf(false) }
+    var advanced by rememberSaveable { mutableStateOf(!vm.hasKey) }
     var keyDialog by rememberSaveable { mutableStateOf(false) }
     var deleteKey by rememberSaveable { mutableStateOf(false) }
     var deleteAll by rememberSaveable { mutableStateOf(false) }
@@ -149,20 +149,10 @@ fun SettingsScreen(vm: MuralViewModel, onExport: () -> Unit, onImport: () -> Uni
             }
             item {
                 val usage = UsageSummary.of(vm.archive.sessions)
-                SettingsGroup(stringResource(R.string.settings_keep_comfortable), stringResource(R.string.settings_usage_footer)) {
-                    val limits = (listOf(5, 10, 15, 20, 30, 60) + prefs.sessionMinutes).distinct().sorted()
-                    SettingsChoiceRow(stringResource(R.string.settings_conversation_limit), stringResource(R.string.settings_limit_minutes, prefs.sessionMinutes),
-                        prefs.sessionMinutes.toString(), limits.map { it.toString() to stringResource(R.string.settings_limit_minutes, it) },
-                        "settings-conversation-limit", !vm.isRunning) { vm.updatePreferences(prefs.copy(sessionMinutes = it.toInt())) }
-                    SettingsDivider()
+                SettingsGroup(stringResource(R.string.settings_section_usage), stringResource(R.string.settings_usage_footer)) {
                     SettingsRow(stringResource(R.string.settings_voice_time_label), usage.voiceTime)
                     SettingsDivider()
-                    SettingsRow(stringResource(R.string.settings_voice_estimate_label), usage.voiceEstimate)
-                    SettingsDivider()
                     SettingsRow(stringResource(R.string.settings_search_calls_label), usage.searchCalls.toString())
-                    SettingsDivider()
-                    SettingsRow(stringResource(R.string.settings_usage_billing_link), tint = MuralColors.Secondary,
-                        onClick = { open("https://platform.openai.com/usage") })
                 }
             }
             item {

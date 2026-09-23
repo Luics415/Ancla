@@ -1,5 +1,6 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/mural_cream" />
-    <item android:width="160dp" android:height="160dp" android:gravity="center"
-          android:drawable="@drawable/ic_ancla_anchor" />
+    <item android:width="200dp" android:height="200dp" android:gravity="center">
+        <bitmap android:src="@drawable/mural_icon" android:gravity="fill" />
+    </item>
 </layer-list>

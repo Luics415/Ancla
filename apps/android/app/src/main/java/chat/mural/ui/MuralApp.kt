@@ -79,7 +79,7 @@ fun MuralApp(
     BackHandler(enabled = tab != 0 && !showSettings && !showAccount && !showMinutes) { tab = 0 }
     fun perform(action: CloudAction) {
         when (action) {
-            CloudAction.StartVoice -> if (!vm.needsMinuteAccess()) onRequestMicrophone()
+            CloudAction.StartVoice -> onRequestMicrophone()
             is CloudAction.SendTyped -> vm.sendTyped(action.text)
             is CloudAction.Lookup -> vm.lookup(action.word, action.sentence)
             is CloudAction.CurrentTopic -> vm.currentTopic(action.query)
@@ -166,9 +166,7 @@ fun MuralApp(
                     Column(Modifier.fillMaxHeight(.94f)) {
                         SettingsScreen(vm, onExport, onImport, onReviewConsent = {
                             vm.pendingCloudAction = null; showConsent = true
-                        }, onAccount = if (account?.configuration != null) ({
-                            account.refresh(); showAccount = true
-                        }) else null, onDismiss = { showSettings = false })
+                        }, onAccount = null, onDismiss = { showSettings = false })
                     }
                 }
             }
@@ -186,43 +184,6 @@ fun MuralApp(
                     vm.pendingCloudAction = null
                 },
             )
-
-            if (vm.showMinuteAccess && !showAccount && !showSettings && !showMinutes) {
-                val memberState = account?.state?.collectAsStateWithLifecycle()?.value
-                GuestMinutesSheet(vm.guestState, memberState?.signedIn == true,
-                    memberRemaining = memberState?.minutes?.availableMilliseconds,
-                    busy = accountTransitionBusy || memberState?.busy == true || vm.hostedReadiness.checking,
-                    ready = vm.hostedReadiness.ready, onContinue = {
-                        vm.dismissMinuteAccess(); onRequestMicrophone()
-                    }, onSignIn = if (account?.configuration != null) ({
-                        vm.dismissMinuteAccess(); showAccount = true; onGoogleSignIn()
-                    }) else null,
-                    onBuy = if (purchases?.enabled == true) ({
-                        vm.dismissMinuteAccess(); purchases.refresh(); showMinutes = true
-                    }) else null,
-                    onRetry = vm::refreshHostedReadiness,
-                    onSettings = { vm.dismissMinuteAccess(); showSettings = true }, onDismiss = vm::dismissMinuteAccess)
-            }
-
-            if (showAccount && !showMinutes && account?.configuration != null) {
-                val accountState by account.state.collectAsStateWithLifecycle()
-                AccountSheet(accountState, onDismiss = { showAccount = false }, onSignIn = onGoogleSignIn,
-                    onSignOut = onSignOut, onDelete = onDeleteAccount, onRefresh = account::refresh,
-                    transitionBusy = accountTransitionBusy, provider = vm.conversationProvider,
-                    hostedAvailable = vm.hostedReadiness.enabled, conversationRunning = vm.isRunning,
-                    onSelectProvider = vm::selectConversationProvider,
-                    onBuyMinutes = if (purchases?.enabled == true) ({ purchases.refresh(); showMinutes = true }) else null,
-                    guestMinutes = vm.guestState.takeIf { it.status == chat.mural.core.GuestMinuteStatus.READY }?.remainingMilliseconds,
-                    memberAlreadyClaimedTrial = vm.guestState.status == chat.mural.core.GuestMinuteStatus.MEMBER_TRIAL_USED)
-            }
-            if (showMinutes && purchases?.enabled == true && account != null) {
-                val purchaseState by purchases.state.collectAsStateWithLifecycle()
-                val accountState by account.state.collectAsStateWithLifecycle()
-                MinutePurchaseSheet(purchaseState, accountState.signedIn, onBuyMinutes,
-                    onSignIn = onGoogleSignIn, onRefresh = purchases::refresh,
-                    onDismiss = { showMinutes = false; account.refresh() },
-                    accountBusy = accountTransitionBusy || accountState.busy)
-            }
 
             reportState.selection?.let { selected ->
                 androidx.compose.runtime.key(reportState.generation) {
