@@ -137,6 +137,22 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
     private val api = APIClient(credentials)
     private val gemini = GeminiClient(credentials)
     private val transport = LiveTransport(application, viewModelScope)
+    private val voiceAgent = chat.mural.agent.VoiceAgent(
+        context = application,
+        onSpeechRecognized = { recognized ->
+            viewModelScope.launch {
+                val clean = recognized.replace(Regex("^(?:oye\\s+)?ancla\\s*,?\\s*", RegexOption.IGNORE_CASE), "").trim()
+                sendTyped(if (clean.isBlank()) recognized else clean)
+            }
+        },
+        onListeningStateChanged = { listening ->
+            isListeningNative = listening
+        },
+        onError = { err ->
+            presentError(err)
+        }
+    )
+    var isListeningNative by mutableStateOf(false); private set
     private val providerStore = ConversationProviderStore(application)
     private val hostedConfiguration = HostedConfiguration.parse(BuildConfig.MANAGED_API_ORIGIN)
     private val accountConfiguration = ManagedAccountConfiguration.parse(BuildConfig.MANAGED_API_ORIGIN, BuildConfig.GOOGLE_SERVER_CLIENT_ID)
@@ -654,7 +670,22 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
         meanings.reset()
         if (archive.preferences.meaningVisible) scheduleTranslation()
     }
-    fun toggleMute() { if (state == "active" && voiceSession) { isMuted = !isMuted; transport.mute(isMuted) } }
+    fun toggleMute() {
+        val isGemini = credentials.read()?.startsWith("sk-") != true
+        if (state == "active" && voiceSession) {
+            if (isGemini) {
+                if (voiceAgent.isListening) {
+                    voiceAgent.stopListening()
+                    isMuted = true
+                } else {
+                    voiceAgent.startListening("es-MX")
+                    isMuted = false
+                }
+            } else {
+                isMuted = !isMuted; transport.mute(isMuted)
+            }
+        }
+    }
     fun help() {
         if (state != "active") return
         if (voiceSession) { activity.learnerEngaged(activityNow()); inactivitySeconds = null; conversationPace.askForHelp(session?.passages?.lastOrNull { it.speaker == Speaker.user }); command("instructions", conversationPace.instruction); command("instructions", TeachingPolicy.help(language)); notice = getApplication<Application>().getString(R.string.notice_help_simpler) }
@@ -690,28 +721,39 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun start() {
         if (isRunning || !cloudReady()) return
-        val choice = ConversationProvider.PERSONAL_KEY
-        if (!ConversationProviderPolicy.canStart(choice, hasKey, hostedReadiness)) {
-            presentError(getApplication<Application>().getString(R.string.error_missing_key), true)
-            return
-        }
-        newSession(true); state = "connecting"
-        val id = session!!.id
-        val module = language
-        val instructions = TeachingPolicy.voice(module, learner, selectedTheme, archive.preferences.interests, archive.preferences.meaningLanguage)
-        val history = ConversationHistory.messages(session)
-        connectionJob = viewModelScope.launch {
-            try {
-                val provider: LiveSessionProvider = api
-                transport.connect(provider, instructions, history, module.locale)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (e: Exception) {
-                if (session?.id == id && isRunning) fail(e, R.string.error_voice_connect_failed)
+        val key = credentials.read()
+        if (key?.startsWith("sk-") == true) {
+            val choice = ConversationProvider.PERSONAL_KEY
+            if (!ConversationProviderPolicy.canStart(choice, hasKey, hostedReadiness)) {
+                presentError(getApplication<Application>().getString(R.string.error_missing_key), true)
+                return
             }
+            newSession(true); state = "connecting"
+            val id = session!!.id
+            val module = language
+            val instructions = TeachingPolicy.voice(module, learner, selectedTheme, archive.preferences.interests, archive.preferences.meaningLanguage)
+            val history = ConversationHistory.messages(session)
+            connectionJob = viewModelScope.launch {
+                try {
+                    val provider: LiveSessionProvider = api
+                    transport.connect(provider, instructions, history, module.locale)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (e: Exception) {
+                    if (session?.id == id && isRunning) fail(e, R.string.error_voice_connect_failed)
+                }
+            }
+        } else {
+            // Google Gemini & Local Device Agent Native Voice (SpeechRecognizer + Gemini 3.6 Flash + TTS)
+            newSession(true)
+            state = "active"
+            startDurationChecks()
+            voiceAgent.startListening("es-MX")
         }
     }
     fun end(reason: String = "Ended by you") {
+        voiceAgent.stopListening()
+        voiceAgent.stopSpeaking()
         if (state !in listOf("active", "connecting")) return
         val connecting = state == "connecting"
         state = "closing"; isMuted = true
@@ -723,6 +765,8 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
         closeJob = viewModelScope.launch { delay(5000); if (state == "closing") finish(false) }
     }
     fun background() {
+        voiceAgent.stopListening()
+        voiceAgent.stopSpeaking()
         // Leaving the foreground ends the conversation and releases the microphone; its final assessment still completes.
         generation++; actionJob?.cancel(); clearLookup(); meanings.reset(); working = false
         if (isRunning) { updateSession { it.endReason = "App moved to background" }; finish(false) }
@@ -961,6 +1005,9 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
                 it.append(Fragment(speaker = Speaker.assistant, text = deviceActionReply, startMS = end, endMS = end + 1))
             }
             typedRepliesSent++
+            if (voiceSession) {
+                voiceAgent.speak(deviceActionReply, "es-MX")
+            }
             return
         }
 
@@ -971,7 +1018,8 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
                 val result = teaching(id, HelperPurpose.TYPED_REPLY, UUID.randomUUID().toString(), instructions, helperContext(draft))
                 if (token != generation || session?.id != id || state != "active") return@launch
                 updateSession { addUsage(it, result.usage) }
-                if (voiceSession) {
+                val isGemini = credentials.read()?.startsWith("sk-") != true
+                if (voiceSession && !isGemini) {
                     if (!command("thinking", "The learner typed (data): ${clean.take(650)}") || !command("commentary", result.text)) {
                         typedReplyError = getApplication<Application>().getString(R.string.error_send_message_failed)
                         return@launch
@@ -982,6 +1030,9 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
                     val end = ((nowSeconds() - session!!.startedAt) * 1000).toInt().coerceAtLeast(offset + 2)
                     updateSession { it.append(Fragment(speaker = Speaker.assistant, text = result.text, startMS = end, endMS = end + 1)) }
                     scheduleTranslation()
+                    if (voiceSession && isGemini) {
+                        voiceAgent.speak(result.text, language.locale)
+                    }
                 }
                 typedRepliesSent++
                 scheduleAssessment()
@@ -1079,5 +1130,5 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
         return try { archive = ArchiveCodec.merge(archive, prepareImportedArchive(data)); persist(); notice = getApplication<Application>().getString(R.string.notice_backup_imported); true }
         catch (_: Exception) { presentError(getApplication<Application>().getString(R.string.error_import_failed)); false }
     }
-    override fun onCleared() { hostedBindings.disableHelpers(); transport.disconnect(); super.onCleared() }
+    override fun onCleared() { voiceAgent.destroy(); hostedBindings.disableHelpers(); transport.disconnect(); super.onCleared() }
 }

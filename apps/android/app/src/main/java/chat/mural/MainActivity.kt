@@ -64,6 +64,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             purchases.balanceChanges.collect { account.refresh(); vm.refreshHostedReadiness() }
         }
+        handleVoiceIntent(intent)
         setContent {
             val accountTransitionBusy by account.transitionBusy.collectAsStateWithLifecycle()
             var microphoneMessage by rememberSaveable { mutableStateOf<String?>(null) }
@@ -224,6 +225,31 @@ class MainActivity : ComponentActivity() {
                 data = Uri.fromParts("package", packageName, null)
             },
         )
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleVoiceIntent(intent)
+    }
+
+    private fun handleVoiceIntent(incomingIntent: Intent?) {
+        if (incomingIntent == null) return
+        val action = incomingIntent.action
+        val isVoiceAction = action == Intent.ACTION_VOICE_COMMAND ||
+                action == Intent.ACTION_ASSIST ||
+                action == "chat.ancla.VOICE_COMMAND" ||
+                action == "chat.mural.VOICE_COMMAND" ||
+                incomingIntent.getBooleanExtra("start_listening", false)
+
+        if (isVoiceAction) {
+            lifecycleScope.launch {
+                kotlinx.coroutines.delay(400)
+                if (androidx.core.content.ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                    vm.start()
+                }
+            }
+        }
     }
 
     private fun showFailure(error: Throwable) {
