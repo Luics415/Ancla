@@ -194,6 +194,7 @@
     <string name="settings_open_source_notices">Open-source notices</string>
     <string name="settings_data_use_footer">Audio and selected text go to OpenAI while you practise. Requests disable provider storage where supported; abuse-monitoring retention may still apply. Raw audio is not saved by Ancla.</string>
     <string name="settings_app_version_footer">Ancla %1$s · Android</string>
+    <string name="settings_developer_signature">Luics415 — Software Developer - Ancla</string>
     <string name="settings_corrections_label">Corrections</string>
     <string name="settings_corrections_value">Gently, as we talk</string>
     <string name="settings_open_api_keys">Open OpenAI API keys</string>

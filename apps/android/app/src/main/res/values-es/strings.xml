@@ -194,6 +194,7 @@
     <string name="settings_open_source_notices">Avisos de código abierto</string>
     <string name="settings_data_use_footer">El audio y el texto elegido se envían a OpenAI durante la práctica. Ancla no guarda audio sin procesar.</string>
     <string name="settings_app_version_footer">Ancla %1$s · Android</string>
+    <string name="settings_developer_signature">Luics415 — Software Developer - Ancla</string>
     <string name="settings_corrections_label">Correcciones</string>
     <string name="settings_corrections_value">Con suavidad, mientras hablamos</string>
     <string name="settings_open_api_keys">Abrir las claves de API de OpenAI</string>

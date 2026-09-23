@@ -187,8 +187,9 @@ fun SettingsScreen(vm: MuralViewModel, onExport: () -> Unit, onImport: () -> Uni
             }
             item {
                 SettingsGroup {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(stringResource(R.string.settings_app_version_footer, version), style = MaterialTheme.typography.bodySmall, color = MuralColors.Secondary)
+                        Text(stringResource(R.string.settings_developer_signature), style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = MuralColors.Ink)
                         Text(stringResource(R.string.settings_models_footer), style = MaterialTheme.typography.bodySmall, color = MuralColors.Secondary)
                     }
                     SettingsDivider()

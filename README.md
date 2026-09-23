@@ -1,7 +1,13 @@
+<p align="center">
+  <img src="docs/images/banner.png" width="100%" alt="Ancla - Luics415 Software Developer" />
+</p>
+
 # ⚓ Ancla
 
 **Tu compañera conversacional para dominar idiomas con Inteligencia Artificial.**
 
+> Desarrollado por **Luics415** · *Software Developer - Ancla*
+> 
 > **100% Gratuita, sin límites de minutos, sin suscripciones comerciales y con privacidad total en tu dispositivo.**
 
 <p align="center">
