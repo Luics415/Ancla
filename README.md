@@ -1,145 +1,144 @@
-# Mural
+# ⚓ Ancla
 
-**The language app you eventually delete.**
+**Tu compañera conversacional para dominar idiomas con Inteligencia Artificial.**
+
+> **100% Gratuita, sin límites de minutos, sin suscripciones comerciales y con privacidad total en tu dispositivo.**
 
 <p align="center">
-  <img src="marketing/screenshots/iphone-17-spanish/01-hola.png" width="24%" alt="Mural greeting in Spanish with voice controls" />
-  <img src="marketing/screenshots/iphone-17-spanish/02-conversacion.png" width="24%" alt="Spanish café conversation with English meaning subtitles" />
-  <img src="marketing/screenshots/iphone-17-spanish/03-temas.png" width="24%" alt="Conversation themes for learning Spanish" />
-  <img src="marketing/screenshots/iphone-17-spanish/04-palabras.png" width="24%" alt="Spanish vocabulary with three levels of recall strength" />
+  <img src="docs/screenshots/01_pantalla_principal.png" width="23%" alt="Pantalla Principal - Hablar" />
+  <img src="docs/screenshots/02_temas.png" width="23%" alt="Temas de Conversación" />
+  <img src="docs/screenshots/03_palabras.png" width="23%" alt="Vocabulario y Aprendizaje" />
+  <img src="docs/screenshots/04_ajustes_idioma_y_clave.png" width="23%" alt="Ajustes de Idioma y API" />
 </p>
 
-Mural is a native iPhone and Android app for learning through conversation. Speak to a warm, animated orb, follow the meaning when you need it, and practise words again in later conversations. Mural adjusts the challenge from the evidence in your replies.
+---
 
-Built with SwiftUI and Liquid Glass on iPhone, and Jetpack Compose on Android. Learning records stay on your device. This version connects directly to OpenAI using your own API key. It needs an internet connection, but no Mural account or running Mac.
+## 🌟 ¿Qué es Ancla?
 
-## Android
+**Ancla** es una aplicación nativa para Android (con soporte complementario para iOS) diseñada para aprender y practicar idiomas a través de la conversación hablada natural. 
 
-A native Android client is available in [`apps/android/`](apps/android/README.md), with voice and written conversation, the same eight language modules, local learning records and iPhone-compatible JSON backups. Its interface is English, and Spanish on a phone set to Spanish. It runs on Android 8.0 or later and uses your own OpenAI API key stored with Android Keystore. The iPhone client remains available below.
+A diferencia de las aplicaciones tradicionales basadas en ejercicios mecánicos, Ancla te sumerge en un diálogo fluido con una compañera de IA pedagógica que te escucha, responde en tiempo real con voz natural, te brinda subtítulos de significado cuando tienes dudas y adapta el desafío a tu nivel.
 
-See the [Android installation/build guide](docs/run-on-android.md) and [Android verification record](verification/android-validation.md). Build a personal-install APK with Java 17 and Android SDK 36:
+---
 
-```sh
-cd apps/android
-./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
-```
+## ✨ Características Principales
 
-## Get started
+- **🔓 100% Libre y Sin Limitaciones:**
+  - Sin minutos de prueba limitados ni muros de pago.
+  - Sin publicidad ni necesidad de crear cuentas obligatorias.
+  - Utiliza tu propia clave de API personal (OpenAI / modelos de IA), guardada de forma cifrada en tu dispositivo.
 
-You need a Mac with Xcode 26 or later, an iPhone running iOS 26.1 or later, an Apple Account, and an OpenAI API project with billing and access to GPT-Live-1 and GPT-5.6 Luna. A ChatGPT subscription does not provide API credit.
+- **🎙️ Práctica Oral en Tiempo Real:**
+  - Conversaciones de voz bidireccionales de baja latencia mediante WebRTC.
+  - Orbe animado y reactivo con shader que refleja el estado de la conversación.
+  - Modo mixto: puedes hablar por micrófono o escribir por texto si estás en un lugar ruidoso.
 
-### Install with a local AI agent
+- **🎯 Pedagogía Conversacional Suave:**
+  - La IA corrige como máximo un error lingüístico relevante por turno, de manera constructiva y sin cortar el ritmo de la conversación.
+  - Respeta dialectos, estilos y tiempos de respuesta.
 
-If Codex or another coding agent has access to your Mac's files and terminal, paste the prompt below. The agent can clone, build and install Mural. You handle Apple Account sign-in and team selection in Xcode, device trust and Developer Mode prompts, and API-key entry inside the app. The [iPhone installation guide](docs/run-on-iphone.md) covers each step.
+- **💬 Subtítulos de Significado:**
+  - Subtítulos instantáneos y explicaciones contextuales de palabras difíciles sin salir de la conversación.
 
-```text
-Help me build and install Mural on my iPhone from https://github.com/Chuloo/mural.
+- **🗺️ Temas y Escenarios Situacionales:**
+  - Más de 24 escenarios inmersivos (café, viajes, trabajo, fines de semana, etc.) adaptados culturalmente a cada idioma.
+  - Búsqueda web integrada para debatir sobre noticias y temas del mundo real.
 
-Clone the repository into a new local folder, or use this checkout if it is
-already open. Read README.md, docs/run-on-iphone.md and docs/build-and-test.md.
-Check that Xcode and its iOS tools are ready, resolve the pinned dependencies,
-run the offline core tests, and build the iOS Simulator target.
+- **📚 Seguimiento de Vocabulario:**
+  - Detección automática de nuevas palabras clave y frases aprendidas.
+  - Indicadores de retención y memoria para repasarlas en sesiones posteriores.
 
-Guide me through adding my Apple Account and choosing my signing team in
-Xcode. For a first installation, help me choose a unique bundle identifier if
-needed. Preserve the existing team and identifier when updating Mural, and
-do not uninstall it or erase its learning data.
+- **🔒 Privacidad Garantizada:**
+  - Todos los registros de aprendizaje, historial de conversaciones y vocabulario se guardan localmente en tu teléfono.
+  - Cifrado seguro mediante **Android Keystore**.
+  - Exportación e importación completa de copias de seguridad en formato JSON.
 
-Detect my connected iPhone, build with the configured signing team, install
-Mural and launch it. Tell me when I need to unlock the phone, trust this Mac
-or the developer profile, enable Developer Mode, or approve a system prompt.
+- **🎨 Diseño y Estética Arcane:**
+  - Paleta visual refinada con degradados suaves (lavanda, cian etéreo, azul marino y fucsia).
+  - Ícono artesanal de ancla en relieve y estilo frosted glass.
 
-I will choose my learning and subtitle languages, then enter my own OpenAI
-API key in Settings > Advanced > Use your own API key. Do not ask me to paste
-the key into chat, read it from Keychain, or put it in source files or logs.
-Leave managed accounts, hosted trials and purchases disabled.
+---
 
-Finish by reporting which build and installation checks passed, and anything
-I still need to do on the phone. I will start the first live conversation.
-```
+## 📸 Galería de Capturas (Android)
 
-### Install with Xcode
+| 1. Pantalla Principal (Hablar) | 2. Temas y Escenarios | 3. Palabras y Retención |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/01_pantalla_principal.png" width="100%" /> | <img src="docs/screenshots/02_temas.png" width="100%" /> | <img src="docs/screenshots/03_palabras.png" width="100%" /> |
+| *Orbe animado y controles de voz* | *Situaciones prácticas de conversación* | *Vocabulario detectado y progreso* |
 
-Updating an earlier checkout? The iPhone project now lives in `apps/ios/`. Before opening it, follow the [local-settings migration steps](docs/run-on-iphone.md#update-an-earlier-checkout) to preserve your signing team, account configuration and existing app identity.
+| 4. Configuración & Clave API | 5. Estadísticas de Uso Libre | 6. Inicio Rápido sin Clave |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/04_ajustes_idioma_y_clave.png" width="100%" /> | <img src="docs/screenshots/05_ajustes_uso_y_datos.png" width="100%" /> | <img src="docs/screenshots/06_dialogo_clave.png" width="100%" /> |
+| *Selección de idiomas y clave directa* | *Métricas de voz y búsquedas sin costo* | *Aviso directo para ingresar tu clave* |
 
-1. Clone [Chuloo/mural](https://github.com/Chuloo/mural), or download its ZIP. Open `apps/ios/Mural.xcodeproj`.
-2. In Xcode, open **Settings → Accounts** and add your Apple Account.
-3. Select the **Mural** target, open **Signing & Capabilities**, enable automatic signing, and choose your team. For your own fork, replace the bundle identifier with a unique value such as `com.yourname.mural`. Keep that value stable for later updates.
-4. Connect and unlock your iPhone. Trust the Mac if prompted. Turn on **Settings → Privacy & Security → Developer Mode** on the phone, restart, and confirm the setting.
-5. Select **Mural** as the scheme and your iPhone as the destination, then click **Run**. If iOS asks you to trust the developer, do so in **Settings → General → VPN & Device Management**.
-6. Choose your learning and subtitle languages in the welcome screens. In **Settings → Advanced → Use your own API key**, save your own OpenAI project key. Start a conversation and allow microphone access.
+---
 
-You should hear Mural greet you in your chosen language. You can now disconnect your phone from the Mac and use Wi-Fi or cellular.
+## 🌍 Idiomas Soportados
 
-A free Personal Team can run the app on your own phone; TestFlight and App Store distribution require Apple Developer Program membership. Free provisioning profiles expire after seven days. Refresh by running the same project again, preserving the team and bundle identifier. Export a learning backup before changing either or switching phones. See the [detailed iPhone guide](docs/run-on-iphone.md) for common setup problems. [Apple membership guidance](https://developer.apple.com/support/compare-memberships/)
+Ancla cuenta con módulos específicos que incluyen objetivos pedagógicos, pronunciación, temas culturales y expresiones auténticas para:
 
-## What works today
+1. **Inglés** (Internacional)
+2. **Español** (España / Internacional)
+3. **Francés** (Francia)
+4. **Alemán** (Alemania)
+5. **Italiano** (Italia)
+6. **Portugués** (Brasil)
+7. **Noruego** (Bokmål)
+8. **Chino Mandarín** (Estándar / Pinyin)
 
-- **A warm welcome:** choose a learning language and a subtitle language in two short screens, with a greeting that changes languages.
-- **Conversation practice:** live voice, gentle corrections, optional meaning subtitles, word lookup, mute, and a typed reply when speaking is inconvenient.
-- **Themes:** 24 conversation settings, with cultural details supplied by each language module. You can also request a current topic; web search supplies source links.
-- **Adaptive practice:** vocabulary and provisional ability observations come from validated conversation evidence. Each learning language keeps separate progress.
-- **Recall bars:** one to three bars summarise repeated retrieval over time. Three bars require spaced evidence in different contexts. These are product heuristics, not calibrated forgetting probabilities or a language certificate.
-- **A fresh start:** the Talk screen returns to its greeting 15 seconds after a conversation ends. Tap **New conversation** to reset immediately. Your saved conversations and learning remain.
-- **Local records:** export or import a JSON learning backup, delete a conversation, or delete all learning data from Settings.
+---
 
-The modules teach Norwegian Bokmål with an Eastern Norwegian voice target, Spanish from Spain, international English, French from France, German from Germany, Italian from Italy, Brazilian Portuguese and Standard Mandarin with Simplified Chinese. Each language has its own conversation themes, teaching guidance and progress. Valid regional alternatives are accepted.
+## 🚀 Compilación e Instalación
 
-On iPhone, Mandarin includes optional pinyin in Talk, transcripts and word details. Chinese word lookup uses word boundaries, and the original characters remain available for copying from transcripts. Pinyin uses system dictionary readings; names, ambiguous words and tone changes in connected speech still need listening checks. Voice accent and teaching guidance are model instructions, and fluent-speaker review is still needed before making pronunciation or learning-effectiveness claims.
+### Requisitos Previos
 
-## Privacy and API costs
+- **Android Studio** (Koala / Ladybug / Quail o superior).
+- **JDK 17** (Temurin, Corretto u OpenJDK).
+- **Android SDK** con API 36 / 35.
+- Dispositivo Android con depuración USB activada (o emulador con Android 8.0+).
 
-Mural stores conversations, vocabulary and preferences on your device. There is no Mural cloud sync, analytics SDK or advertising. The optional iPhone account feature stores signup data on the account service; conversations and vocabulary stay local. Your API key is stored in the device’s Keychain, excluded from learning exports, and sent only to OpenAI.
+### Instrucciones
 
-During practice, audio, selected conversation text, learning context and requested searches go to OpenAI. Mural does not save raw audio. API requests set `store: false` where supported, but that does not disable all provider retention; OpenAI’s abuse-monitoring rules and your project’s settings still apply. [OpenAI data controls](https://developers.openai.com/api/docs/guides/your-data)
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/Luics415/mural.git
+   cd mural/apps/android
+   ```
 
-OpenAI bills your project for voice, text and search. The app’s usage display is an estimate, and its conversation time limit is not a billing cap. Check your OpenAI project’s usage and spending settings.
+2. **Compilar el APK de depuración:**
+   - En Windows (PowerShell):
+     ```powershell
+     $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.20.101-hotspot"
+     .\gradlew.bat :app:assembleDebug
+     ```
+   - En macOS / Linux:
+     ```bash
+     ./gradlew :app:assembleDebug
+     ```
 
-## Planned public service
+3. **Instalar en tu dispositivo Android:**
+   ```bash
+   adb install -r app/build/outputs/apk/debug/app-debug.apk
+   ```
 
-Hosted free conversations and minute purchases are **not active**. Optional Google sign-in exists on iPhone; Android account integration is in progress. The [API foundation](services/api/README.md) contains identity verification, audited minute allowances and guest transfers, plus the earlier sandbox payment support. [Minute controls](docs/conversation-minutes.md) describe what is implemented and what remains disabled. Its runbook lists the remaining work before commercial activation. No shared provider key belongs in this repository or a distributed app binary.
+4. **Configuración Inicial:**
+   - Abre **Ancla** en tu teléfono.
+   - Pulsa el ícono de **Ajustes** (arriba a la derecha).
+   - En la sección **Avanzado > Usar tu propia clave de API**, pulsa **Guardar clave** e introduce tu clave de OpenAI.
+   - ¡Listo! Pulsa el micrófono para iniciar tu primera sesión conversacional.
 
-A public TestFlight link and App Store listing are not yet available. [Release preparation](release/README.md) records the outstanding requirements.
+---
 
-The [Mural website](https://mural.chat) lives in the separate [Chuloo/mural-website repository](https://github.com/Chuloo/mural-website).
+## 🛠️ Tecnologías Utilizadas
 
-## Build and test
+- **Frontend:** Kotlin, Jetpack Compose, Material3, Coroutines, Flow.
+- **Audio & Streaming:** WebRTC, AudioRecord, OpenSL/AAudio.
+- **Seguridad:** Android Keystore, EncryptedSharedPreferences.
+- **Networking:** OkHttp 4, Kotlinx Serialization.
+- **IA:** OpenAI Realtime WebRTC API (`gpt-live-1`), Structured Outputs (`gpt-5.6-luna`), Search Tools.
 
-From the repository root:
+---
 
-```sh
-swift test --package-path apps/ios
-xcodebuild -project apps/ios/Mural.xcodeproj -scheme Mural \
-  -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath .build/DerivedData \
-  CODE_SIGNING_ALLOWED=NO ARCHS=arm64 ONLY_ACTIVE_ARCH=YES build
-```
+## 📄 Licencia
 
-For UI tests, create or select an iPhone 17 simulator in Xcode, then run **Product → Test**. The tests use in-memory fixtures and do not require an API key. More commands and preview options are in [the build guide](docs/build-and-test.md).
-
-The iPhone language release recorded on 13 September 2026 passed **70 core tests and 20 native UI tests**, including Mandarin pinyin, all four new onboarding choices and the largest accessibility text size. **79 backend tests** passed with an isolated PostgreSQL database and no skips. German, Italian, Brazilian Portuguese and Mandarin each passed a live iPhone check using synthetic typed replies and real voice output, meanings and word lookup. These checks do not establish human speech-recognition, pronunciation or correction quality. [Verification record](verification/validation.md)
-
-The Android release branch is being prepared separately. See [release progress](verification/android-release-progress.md) for its checks and remaining gates.
-
-## Code map
-
-| Directory | Contents |
-| --- | --- |
-| `apps/android/` | Native Kotlin/Compose Android client and tests |
-| `apps/ios/App/` | SwiftUI views, SwiftData storage, Keychain, WebRTC transport and API coordination |
-| `apps/ios/Core/` | Language modules, teaching policy, transcripts, vocabulary evidence and recall projection |
-| `apps/ios/Tests/` | Core learning and translation tests |
-| `apps/ios/UITests/` | Native interface tests |
-| `shared/` | API contracts and fixtures exercised by both native clients |
-| `scripts/` | Project generation, language export and compatibility checks |
-| `docs/` | Setup, build and language-module guides |
-| `release/` | Submission drafts and public-release checks |
-| `services/api/` | Account, billing and hosted-service foundation; see its runbook before deploying |
-
-Read [how the language architecture works](docs/language-architecture.md) and [how to add a language](docs/add-language.md). Contributions should follow [CONTRIBUTING.md](CONTRIBUTING.md); security issues belong in the [private reporting process](SECURITY.md).
-
-## Dependencies and license
-
-The native WebRTC package is pinned to [stasel/WebRTC 152.0.0](https://github.com/stasel/WebRTC/tree/152.0.0). The app bundles [third-party notices](apps/ios/App/ThirdPartyNotices.txt) and the SDK’s privacy manifest. Review upstream notices when changing the dependency.
-
-Mural is released under the [MIT License](LICENSE). Third-party components retain their own licenses. The Mural name and logo identify the original project; the software license does not grant trademark rights.
+Distribuido bajo la licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
