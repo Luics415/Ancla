@@ -26,7 +26,7 @@ class CredentialStore internal constructor(
     @Synchronized
     fun save(key: String) {
         val value = key.trim()
-        if (!value.startsWith("sk-") || value.length < 20 || value.any(Char::isWhitespace)) {
+        if (value.length < 15 || value.any(Char::isWhitespace)) {
             throw CredentialException.Invalid
         }
 
@@ -59,7 +59,7 @@ class CredentialStore internal constructor(
                 GCMParameterSpec(GCM_TAG_BITS, Base64.decode(encodedIv, Base64.NO_WRAP)),
             )
             cipher.doFinal(Base64.decode(encodedCiphertext, Base64.NO_WRAP)).toString(Charsets.UTF_8)
-                .takeIf { it.startsWith("sk-") && it.length >= 20 && it.none(Char::isWhitespace) }
+                .takeIf { it.length >= 15 && it.none(Char::isWhitespace) }
                 ?: clearUnreadableCredential()
         } catch (_: Exception) {
             clearUnreadableCredential()

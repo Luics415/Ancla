@@ -256,18 +256,17 @@ fun TalkScreen(
         }
         Text(stringResource(if (vm.state == "active" && vm.isVoiceSession && !vm.isMuted) R.string.talk_microphone_on else R.string.talk_microphone_off),
             style = MaterialTheme.typography.bodySmall, color = MuralColors.Secondary, modifier = Modifier.padding(top = 6.dp))
-        if (vm.state == "active" || microphoneMessage != null) {
-            Row(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
-                MuralTextButton(onClick = { typing = true }, enabled = !busy && !vm.working) {
-                    MuralIcon(MuralSymbol.Keyboard, Modifier.size(15.dp)); Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.talk_type_button), style = MaterialTheme.typography.bodySmall, color = MuralColors.Ink)
-                }
-                if (vm.state == "active") MuralTextButton(onClick = onHelp, enabled = !vm.working) {
-                    MuralIcon(MuralSymbol.Sparkles, Modifier.size(15.dp)); Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.talk_help_button), style = MaterialTheme.typography.bodySmall, color = MuralColors.Ink)
-                }
+        Row(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
+            MuralTextButton(onClick = { typing = true }, enabled = !busy && !vm.working) {
+                MuralIcon(MuralSymbol.Keyboard, Modifier.size(15.dp)); Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.talk_type_button), style = MaterialTheme.typography.bodySmall, color = MuralColors.Ink)
             }
-        } else if (vm.session == null) {
+            if (vm.state == "active") MuralTextButton(onClick = onHelp, enabled = !vm.working) {
+                MuralIcon(MuralSymbol.Sparkles, Modifier.size(15.dp)); Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.talk_help_button), style = MaterialTheme.typography.bodySmall, color = MuralColors.Ink)
+            }
+        }
+        if (vm.session == null && vm.state != "active") {
             Text(stringResource(R.string.talk_reply_any_language), style = MaterialTheme.typography.bodySmall,
                 color = MuralColors.Secondary, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 7.dp, bottom = 8.dp))
         }
