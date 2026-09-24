@@ -1069,6 +1069,29 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
                             }
                             spokenText = decision.speech.ifBlank { result.message }
                         }
+                        "network_stability" -> {
+                            val netInfo = withContext(Dispatchers.IO) {
+                                chat.mural.agent.DeviceAgent.getNetworkStability(getApplication())
+                            }
+                            spokenText = netInfo.speechSummary
+                        }
+                        "search_photos" -> {
+                            val photoTarget = decision.photoDate ?: clean
+                            val photoResult = withContext(Dispatchers.IO) {
+                                chat.mural.agent.DeviceAgent.searchPhotosByDate(getApplication(), photoTarget)
+                            }
+                            spokenText = photoResult.message
+                        }
+                        "netflix" -> {
+                            val title = decision.netflixTitle ?: clean
+                            val netflixResult = withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.openNetflix(getApplication(), title, decision.season, decision.episode)
+                            }
+                            spokenText = decision.speech.ifBlank { netflixResult.message }
+                        }
+                        "gemini_query" -> {
+                            spokenText = decision.speech
+                        }
                         "open_maps" -> {
                             val dest = decision.destination ?: clean
                             withContext(Dispatchers.Main) {

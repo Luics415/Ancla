@@ -2,6 +2,7 @@
     <!-- Red e Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <!-- Micrófono y Audio -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -68,6 +69,8 @@
         <package android:name="com.google.android.youtube" />
         <package android:name="com.google.android.apps.maps" />
         <package android:name="com.spotify.music" />
+        <package android:name="com.netflix.mediaclient" />
+        <package android:name="com.discord" />
     </queries>
 
     <application android:label="Ancla" android:icon="@mipmap/ic_mural" android:roundIcon="@mipmap/ic_mural" android:theme="@style/Theme.Mural"

@@ -12,14 +12,18 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 
 data class AgentDecision(
-    val action: String, // "open_app", "youtube_search", "whatsapp", "discord", "open_maps", "device_diagnostics", "weather", "web_search", "reply"
+    val action: String, // "open_app", "youtube_search", "whatsapp", "discord", "open_maps", "device_diagnostics", "weather", "network_stability", "search_photos", "netflix", "gemini_query", "web_search", "reply"
     val speech: String,
     val appName: String? = null,
     val contact: String? = null,
     val message: String? = null,
     val destination: String? = null,
     val searchQuery: String? = null,
-    val serverName: String? = null
+    val serverName: String? = null,
+    val photoDate: String? = null,
+    val netflixTitle: String? = null,
+    val season: String? = null,
+    val episode: String? = null
 )
 
 class GeminiClient(
@@ -32,25 +36,33 @@ class GeminiClient(
     suspend fun resolveAgentIntent(utterance: String): AgentDecision {
         val key = readCredential() ?: throw APIClient.APIException.MissingKey
         val systemPrompt = """
-            Eres Ancla, un asistente de inteligencia artificial avanzado, inteligente y autónomo para Android, desarrollado por Luics415.
+            Eres Ancla, un asistente de inteligencia artificial avanzado, inteligente y autónomo para Android, desarrollado para Luics.
             Tienes control directo del dispositivo mediante acciones.
             Analiza la petición del usuario y responde SIEMPRE en formato JSON con la siguiente estructura:
             {
               "thought": "breve razonamiento",
-              "action": "open_app" | "youtube_search" | "whatsapp" | "discord" | "open_maps" | "device_diagnostics" | "weather" | "web_search" | "reply",
+              "action": "open_app" | "youtube_search" | "whatsapp" | "discord" | "open_maps" | "device_diagnostics" | "weather" | "network_stability" | "search_photos" | "netflix" | "gemini_query" | "web_search" | "reply",
               "parameters": {
-                "app_name": "nombre de la app o juego a abrir (ej. Spotify, Cámara, Ajustes, Free Fire)",
-                "contact": "nombre del contacto tal cual lo dice el usuario (ej. Mamá, Carlos, Hermano, Alejandra)",
+                "app_name": "nombre de la app o juego a abrir",
+                "contact": "nombre del contacto para WhatsApp",
                 "message": "mensaje a enviar si aplica o null",
                 "destination": "lugar o ruta de mapas si aplica",
                 "search_query": "búsqueda en YouTube o web si aplica",
-                "server_name": "nombre del servidor, grupo o canal de Discord si aplica"
+                "server_name": "nombre del servidor o canal de Discord",
+                "photo_date": "fecha para buscar fotos (ej. '20 de septiembre del 2026', 'ayer', 'hoy')",
+                "netflix_title": "título de la serie o película de Netflix",
+                "season": "temporada si aplica o null",
+                "episode": "episodio si aplica o null"
               },
               "speech": "Respuesta hablada natural y en español para el usuario."
             }
 
             Reglas:
-            - Presentación de Capacidades: Si el usuario te pide que le hables, platiques o cuentes qué puedes hacer (ej. "Ancla, cuéntame qué puedes hacer", "platícame qué puedes hacer", "háblame de lo que haces", "¿qué sabes hacer?", "¿cuáles son tus funciones?"): action="reply". En "speech", responde con una conversación fluida, cálida, cercana y natural (diseñada para escucharse por voz mediante TTS). Preséntate con entusiasmo como su asistente en el celular y platícale de forma conversacional que puedes buscar directamente videos y música en YouTube sin teclear, entrar directo al chat de WhatsApp de cualquiera de sus contactos y preparar mensajes, conectarlo a sus canales de Discord, abrir cualquiera de sus juegos o aplicaciones al instante, darle rutas y tráfico en Google Maps, revisar el rendimiento, batería y temperatura de su teléfono para que no se caliente, o platicar y practicar idiomas si abre la app. Cierra invitándolo con naturalidad a pedirte lo que necesite.
+            - Búsquedas o Consultas en Gemini: Si el usuario dice 'en geminis', 'en géminis', 'en gemini' o pide buscar o consultar directamente en Gemini (ej. 'busca en géminis cómo funciona el motor cuántico', 'en géminis explica la fotosíntesis', 'pregúntale a géminis...', 'en geminis cuéntame de nano banana para imágenes'): NUNCA abras el navegador ni uses web_search. Usa action="gemini_query". Responde tú mismo de manera inteligente, completa, fluida y conversacional por voz en "speech". Si el usuario menciona herramientas de Gemini como 'nano banana' (para generación o edición de imágenes/videos), modo 'estudiantes' (modo estudio y aprendizaje), 'biblioteca', 'spark' o creación de contenido, reconócelas y guíalo con entusiasmo en esa modalidad.
+            - Búsqueda de Fotos en el Teléfono / Almacenamiento: Si el usuario pide buscar fotos por fecha o ver fotos del dispositivo (ej. 'busca fotos del día 20 de septiembre del 2026', 'muéstrame fotos de ayer', 'fotos de hoy', 'busca fotos del 15 de agosto'): action="search_photos" y photo_date con la fecha indicada.
+            - Estabilidad de Red y Conectividad: Si el usuario pregunta por la estabilidad de su red, calidad del wifi, señal de datos, velocidad o estado de internet (ej. 'dime la estabilidad de mi red', '¿cómo está mi wifi?', '¿está estable mi internet?', 'calidad de la red'): action="network_stability".
+            - Netflix (Series, Películas, Temporadas, Episodios): Si el usuario pide reproducir, buscar o abrir Netflix con una serie, película, temporada o episodio (ej. 'reproduce en netflix la serie Dark temporada 2', 'abre netflix buscando Stranger Things episodio 1', 'busca en netflix One Piece'): action="netflix", netflix_title="título", season="temporada si aplica o null", episode="episodio si aplica o null".
+            - Presentación de Capacidades: Si el usuario te pide que le hables, platiques o cuentes qué puedes hacer (ej. "Ancla, cuéntame qué puedes hacer", "platícame qué puedes hacer", "háblame de lo que haces", "¿qué sabes hacer?", "¿cuáles son tus funciones?"): action="reply". En "speech", responde con una conversación fluida, cálida, cercana y natural (diseñada para escucharse por voz mediante TTS). Preséntate con entusiasmo como su asistente en el celular y platícale de forma conversacional que puedes buscar directamente videos y música en YouTube sin teclear, entrar directo al chat de WhatsApp de cualquiera de sus contactos y preparar mensajes, conectarlo a sus canales de Discord, abrir cualquiera de sus juegos o aplicaciones al instante, reproducir series y películas en Netflix, buscar fotos en su almacenamiento por fecha, checar la estabilidad de su red wifi o datos móviles, darle rutas y tráfico en Google Maps, revisar el rendimiento, batería y temperatura de su teléfono para que no se caliente, o platicar, investigar y practicar idiomas si abre la app. Cierra invitándolo con naturalidad a pedirte lo que necesite.
             - Búsquedas en YouTube: Si el usuario pide buscar videos, canciones o contenido en YouTube de cualquier forma natural (ej. "¿eres capaz de ir a YouTube y buscar física cuántica por favor?", "busca videos de risa en YouTube", "ponme en YouTube música de rock"), action="youtube_search" y search_query="término buscado".
             - WhatsApp y Contactos: Si el usuario pide entrar al chat de alguien o mandar mensaje a un contacto (ej. "entra al chat de Carlos en WhatsApp", "mándale un WhatsApp a Mamá", "abre WhatsApp con Alejandra"), action="whatsapp", contact="nombre del contacto", message="mensaje si aplica o null".
             - Discord: Si el usuario pide conectarse a Discord, a un canal de voz, servidor o grupo (ej. "conéctame a Discord al grupo de amigos", "vamos a Discord", "entra a Discord en el canal de voz"), action="discord", server_name="nombre del servidor/grupo si aplica".
@@ -58,7 +70,7 @@ class GeminiClient(
             - Direcciones y Mapas: Si pide rutas, tráfico o cómo llegar, action="open_maps".
             - Diagnósticos: Batería, temperatura o rendimiento del celular, action="device_diagnostics".
             - Clima: Pronóstico del tiempo o lluvia, action="weather".
-            - Búsqueda web: action="web_search".
+            - Búsqueda web: action="web_search" (solo si pide expresamente buscar en google/navegador/web sin mencionar gemini).
             - Conversación general y preguntas: action="reply" con respuesta hablada natural y concisa (1 o 2 oraciones para TTS estándar, salvo cuando te pida platicar de tus capacidades donde es más conversacional y fluida).
             - La clave única para activarte es 'ancla'. Todo el lenguaje es natural, flexible e inteligente.
         """.trimIndent()
@@ -100,6 +112,10 @@ class GeminiClient(
             val destination = params?.get("destination")?.jsonPrimitive?.contentOrNull
             val searchQuery = params?.get("search_query")?.jsonPrimitive?.contentOrNull
             val serverName = params?.get("server_name")?.jsonPrimitive?.contentOrNull
+            val photoDate = params?.get("photo_date")?.jsonPrimitive?.contentOrNull
+            val netflixTitle = params?.get("netflix_title")?.jsonPrimitive?.contentOrNull
+            val season = params?.get("season")?.jsonPrimitive?.contentOrNull
+            val episode = params?.get("episode")?.jsonPrimitive?.contentOrNull
 
             AgentDecision(
                 action = action,
@@ -109,7 +125,11 @@ class GeminiClient(
                 message = message,
                 destination = destination,
                 searchQuery = searchQuery,
-                serverName = serverName
+                serverName = serverName,
+                photoDate = photoDate,
+                netflixTitle = netflixTitle,
+                season = season,
+                episode = episode
             )
         } catch (e: Exception) {
             android.util.Log.e("GeminiClient", "Failed to parse agent JSON: ${result.text}", e)

@@ -347,6 +347,23 @@ class AnclaAccessibilityService : AccessibilityService(), RecognitionListener, T
                             val result = DeviceAgent.openApp(applicationContext, targetApp)
                             finalSpeech = decision.speech.ifBlank { result.message }
                         }
+                        "network_stability" -> {
+                            val netInfo = DeviceAgent.getNetworkStability(applicationContext)
+                            finalSpeech = netInfo.speechSummary
+                        }
+                        "search_photos" -> {
+                            val photoTarget = decision.photoDate ?: queryToProcess
+                            val photoResult = DeviceAgent.searchPhotosByDate(applicationContext, photoTarget)
+                            finalSpeech = photoResult.message
+                        }
+                        "netflix" -> {
+                            val title = decision.netflixTitle ?: queryToProcess
+                            val netflixResult = DeviceAgent.openNetflix(applicationContext, title, decision.season, decision.episode)
+                            finalSpeech = decision.speech.ifBlank { netflixResult.message }
+                        }
+                        "gemini_query" -> {
+                            finalSpeech = decision.speech
+                        }
                         "open_maps" -> {
                             val dest = decision.destination ?: queryToProcess
                             DeviceAgent.openMaps(applicationContext, dest)
