@@ -126,7 +126,7 @@ fun TalkScreen(
     ) {
         Surface(color = MuralColors.Butter.copy(alpha = .58f), shape = CircleShape) {
             Text(
-                vm.selectedTheme?.title ?: vm.language.talkTitle,
+                "Ancla · Asistente IA",
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = if (compact) 6.dp else 8.dp),
                 style = MaterialTheme.typography.labelMedium, color = MuralColors.Secondary,
             )
@@ -148,70 +148,11 @@ fun TalkScreen(
             }
             Text(statusCaption, style = MaterialTheme.typography.bodySmall,
                 color = MuralColors.Secondary, textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = if (vm.inactivitySeconds != null && assistantPassage != null) 40.dp else 0.dp)
+                modifier = Modifier.padding(horizontal = 40.dp)
                     .testTag("conversation-status"))
-            if (assistantPassage != null && passage?.isNotBlank() == true) {
-                Box(Modifier.matchParentSize(), contentAlignment = Alignment.CenterEnd) {
-                    ReportUtteranceAction(onClick = {
-                        vm.session?.id?.let { vm.reportUtterance(it, assistantPassage.id) }
-                    }, modifier = Modifier.requiredSize(40.dp).testTag("report-current-utterance"))
-                }
-            }
         }
         Spacer(Modifier.height(if (compact) 12.dp else 20.dp - 8.dp * readingSpace))
-        Column(
-            // Each language keeps a share of the available space. A single scroller let
-            // long target-language replies push their meaning entirely below the viewport.
-            modifier = (if (scrollPage) Modifier else Modifier.weight(1f))
-                .fillMaxWidth().testTag("conversation-captions"),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-        Column(
-            modifier = (if (scrollPage) Modifier else Modifier.weight(1f, fill = false).passageScroll(targetScroll))
-                .fillMaxWidth().testTag("target-passage-scroll"),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                if (passage == null) AnnotatedString(caption)
-                else captionLinks(caption, vm.language.id) { word ->
-                    vm.clearLookup(); lookupWord = word; lookupSentence = caption
-                    lookup = true; onLookup(word, caption)
-                },
-                style = if (passage == null) MaterialTheme.typography.displaySmall else MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().testTag("target-caption"),
-            )
-            if (vm.language.id == "zh") PinyinHelp(caption)
-        }
-        if (vm.archive.preferences.meaningVisible) {
-            Spacer(Modifier.height(10.dp))
-            Column(
-                modifier = (if (scrollPage) Modifier else Modifier.weight(.72f, fill = false).passageScroll(meaningScroll))
-                    .fillMaxWidth().testTag("meaning-passage-scroll"),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-            Text(
-                when {
-                    passage == null -> chat.mural.core.MeaningLanguages.greeting(vm.archive.preferences.meaningLanguage)
-                    vm.meaning.isNotBlank() -> vm.meaning
-                    vm.translating -> stringResource(R.string.talk_meaning_loading)
-                    else -> ""
-                },
-                color = MuralColors.Secondary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.testTag("meaning-caption"),
-            )
-            if (vm.meaningFailed) {
-                Text(stringResource(if (vm.meaningLimitReached) R.string.talk_meaning_too_long else R.string.talk_meaning_failed), color = MuralColors.Secondary, style = MaterialTheme.typography.bodySmall)
-                if (!vm.meaningLimitReached) MuralTextButton(onClick = vm::retryMeaning) { Text(stringResource(R.string.talk_retry_meaning_button)) }
-            }
-            }
-        }
-        if (vm.session?.topics?.lastOrNull()?.sources?.isNotEmpty() == true) {
-            MuralTextButton(onClick = { transcript = vm.session }) { Text(stringResource(R.string.topics_sources_heading)) }
-        }
-        }
+        Spacer(Modifier.weight(1f))
         if (vm.working) {
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(9.dp), verticalAlignment = Alignment.CenterVertically) {
