@@ -13,6 +13,15 @@ import android.provider.Settings
 import java.net.URLEncoder
 import java.text.Normalizer
 
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.floatOrNull
+import kotlinx.serialization.json.intOrNull
+import java.util.concurrent.TimeUnit
+
 data class AppLaunchResult(
     val success: Boolean,
     val appName: String,
@@ -286,6 +295,63 @@ object DeviceAgent {
             totalRamGb = totalGb,
             performanceSummary = summary
         )
+    }
+
+    /**
+     * Retrieves current real-time weather using device coordinates or defaults via Open-Meteo.
+     */
+    fun getWeather(context: Context): String {
+        return try {
+            val lm = context.getSystemService(Context.LOCATION_SERVICE) as? android.location.LocationManager
+            var lat = 19.4326
+            var lon = -99.1332
+            if (lm != null) {
+                try {
+                    val loc = lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER)
+                        ?: lm.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER)
+                        ?: lm.getLastKnownLocation(android.location.LocationManager.PASSIVE_PROVIDER)
+                    if (loc != null) {
+                        lat = loc.latitude
+                        lon = loc.longitude
+                    }
+                } catch (_: SecurityException) {}
+            }
+
+            val client = OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .build()
+
+            val url = "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,relative_humidity_2m,weather_code"
+            val req = Request.Builder().url(url).build()
+            val resp = client.newCall(req).execute()
+            if (!resp.isSuccessful) return "No pude obtener los datos del clima en este momento."
+
+            val body = resp.body?.string() ?: return "No se recibió respuesta del servicio de clima."
+            val json = Json.parseToJsonElement(body).jsonObject
+            val current = json["current"]?.jsonObject ?: return "Información meteorológica no disponible."
+            val temp = current["temperature_2m"]?.jsonPrimitive?.floatOrNull ?: 20f
+            val humidity = current["relative_humidity_2m"]?.jsonPrimitive?.intOrNull ?: 50
+            val code = current["weather_code"]?.jsonPrimitive?.intOrNull ?: 0
+
+            val condition = when (code) {
+                0 -> "cielo despejado y soleado"
+                1, 2 -> "cielo con algunas nubes"
+                3 -> "cielo nublado"
+                45, 48 -> "niebla matutina"
+                51, 53, 55 -> "llovizna ligera"
+                61, 63, 65 -> "lluvia"
+                71, 73, 75 -> "nieve"
+                80, 81, 82 -> "chubascos dispersos"
+                95, 96, 99 -> "tormenta eléctrica"
+                else -> "condiciones estables"
+            }
+
+            "Actualmente tenemos ${String.format("%.1f", temp)}°C con $condition y una humedad del $humidity%."
+        } catch (e: Exception) {
+            android.util.Log.e("DeviceAgent", "Error fetching weather", e)
+            "No pude conectar con el servicio del clima. Por favor revisa tu conexión a internet."
+        }
     }
 
     /**

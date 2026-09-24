@@ -265,6 +265,11 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    override fun onResume() {
+        super.onResume()
+        handleVoiceIntent(intent)
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -280,10 +285,17 @@ class MainActivity : ComponentActivity() {
                 action == "chat.mural.VOICE_COMMAND" ||
                 incomingIntent.getBooleanExtra("start_listening", false)
 
+        android.util.Log.d("MainActivity", "handleVoiceIntent: isVoiceAction=$isVoiceAction, action=$action")
         if (isVoiceAction) {
+            incomingIntent.action = null
+            incomingIntent.putExtra("start_listening", false)
             lifecycleScope.launch {
-                kotlinx.coroutines.delay(400)
+                while (vm.loadingHistory) {
+                    kotlinx.coroutines.delay(50)
+                }
+                kotlinx.coroutines.delay(200)
                 if (androidx.core.content.ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                    android.util.Log.d("MainActivity", "Starting Ancla voice listening...")
                     vm.start()
                 }
             }

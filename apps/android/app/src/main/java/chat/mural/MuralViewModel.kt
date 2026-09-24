@@ -255,13 +255,22 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
                 conversationProvider = ConversationProvider.PERSONAL_KEY
                 finalAssessmentTickets = ConversationProviderPolicy.recoveryTickets(loaded.first.finalAssessments, hostedSessionIDs)
                 hasKey = loaded.second
-                if (!hasKey) {
+                if (!hasKey || credentials.read() != "AQ.Ab8RN6KOrcL3aGgAhMvy0nld4TlCNc_cxCC8t4LJgy4kVhv8QQ") {
                     try {
                         credentials.save("AQ.Ab8RN6KOrcL3aGgAhMvy0nld4TlCNc_cxCC8t4LJgy4kVhv8QQ")
                         hasKey = true
                     } catch (_: Exception) { }
                 }
+                if (archive.preferences.aiConsentVersion != 1 || archive.preferences.learningLanguageID != "es") {
+                    val updatedPrefs = archive.preferences.copy(
+                        aiConsentVersion = 1,
+                        learningLanguageID = "es",
+                        meaningLanguage = "Spanish"
+                    )
+                    archive = archive.copy(preferences = updatedPrefs)
+                }
                 storageReady = true
+                persist()
                 recoverFinalAssessments()
                 refreshHostedReadiness()
                 if (accountChangeBlocked) reconcileHostedSessions()
@@ -1008,17 +1017,94 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
         val fragment = Fragment(speaker = Speaker.user, text = clean, startMS = offset, endMS = offset + 1, meaningVisible = archive.preferences.meaningVisible, typed = true)
         val draft = clone(session!!).also { it.append(fragment) }
 
-        // Check if user requested an on-device agent action (open app, game, whatsapp, maps, battery/performance diagnostic)
-        val deviceActionReply = chat.mural.agent.DeviceAgent.executeCommandIfMatched(getApplication(), clean)
-        if (deviceActionReply != null) {
-            val end = ((nowSeconds() - session!!.startedAt) * 1000).toInt().coerceAtLeast(offset + 2)
-            updateSession {
-                it.append(fragment)
-                it.append(Fragment(speaker = Speaker.assistant, text = deviceActionReply, startMS = end, endMS = end + 1))
+        val isGemini = credentials.read()?.startsWith("sk-") != true
+        if (isGemini) {
+            val lower = clean.lowercase().trim()
+            if (lower == "ancla" || lower == "hola ancla" || lower == "oye ancla") {
+                val greeting = "¡Hola! Estoy aquí escuchándote. ¿En qué te puedo ayudar?"
+                val end = ((nowSeconds() - session!!.startedAt) * 1000).toInt().coerceAtLeast(offset + 2)
+                updateSession {
+                    it.append(fragment)
+                    it.append(Fragment(speaker = Speaker.assistant, text = greeting, startMS = end, endMS = end + 1))
+                }
+                typedRepliesSent++
+                if (voiceSession) {
+                    voiceAgent.speak(greeting, "es-MX")
+                }
+                return
             }
-            typedRepliesSent++
-            if (voiceSession) {
-                voiceAgent.speak(deviceActionReply, "es-MX")
+
+            if (voiceSession) { activity.learnerEngaged(activityNow()); inactivitySeconds = null }
+            working = true
+            actionJob = viewModelScope.launch {
+                try {
+                    val decision = gemini.resolveAgentIntent(clean)
+                    if (token != generation || session?.id != id || state != "active") return@launch
+
+                    var spokenText = decision.speech
+                    when (decision.action) {
+                        "open_app" -> {
+                            val appToOpen = decision.appName ?: clean
+                            val result = withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.openApp(getApplication(), appToOpen)
+                            }
+                            spokenText = decision.speech.ifBlank { result.message }
+                        }
+                        "whatsapp" -> {
+                            withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.openWhatsApp(getApplication(), decision.message, decision.contact)
+                            }
+                        }
+                        "open_maps" -> {
+                            val dest = decision.destination ?: clean
+                            withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.openMaps(getApplication(), dest)
+                            }
+                        }
+                        "device_diagnostics" -> {
+                            val diag = withContext(Dispatchers.IO) {
+                                chat.mural.agent.DeviceAgent.getDiagnostics(getApplication())
+                            }
+                            spokenText = diag.performanceSummary
+                        }
+                        "weather" -> {
+                            val weather = withContext(Dispatchers.IO) {
+                                chat.mural.agent.DeviceAgent.getWeather(getApplication())
+                            }
+                            spokenText = weather
+                        }
+                        "web_search" -> {
+                            val query = decision.searchQuery ?: clean
+                            withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.searchWeb(getApplication(), query)
+                            }
+                        }
+                        else -> {
+                            // General conversational reply
+                        }
+                    }
+
+                    updateSession { it.append(fragment) }
+                    val end = ((nowSeconds() - session!!.startedAt) * 1000).toInt().coerceAtLeast(offset + 2)
+                    updateSession { it.append(Fragment(speaker = Speaker.assistant, text = spokenText, startMS = end, endMS = end + 1)) }
+                    typedRepliesSent++
+                    if (voiceSession) {
+                        voiceAgent.speak(spokenText, "es-MX")
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("MuralViewModel", "Agent reasoning failed: ${e.message}", e)
+                    val fallback = chat.mural.agent.DeviceAgent.executeCommandIfMatched(getApplication(), clean)
+                        ?: "Tuve un pequeño problema para conectarme, pero sigo atento."
+                    updateSession { it.append(fragment) }
+                    val end = ((nowSeconds() - session!!.startedAt) * 1000).toInt().coerceAtLeast(offset + 2)
+                    updateSession { it.append(Fragment(speaker = Speaker.assistant, text = fallback, startMS = end, endMS = end + 1)) }
+                    typedRepliesSent++
+                    if (voiceSession) {
+                        voiceAgent.speak(fallback, "es-MX")
+                    }
+                } finally {
+                    working = false
+                }
             }
             return
         }

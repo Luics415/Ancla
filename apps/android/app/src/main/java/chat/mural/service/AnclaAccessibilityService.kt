@@ -6,10 +6,15 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import chat.mural.MainActivity
 
+import android.accessibilityservice.AccessibilityButtonController
+import android.os.Build
+
 class AnclaAccessibilityService : AccessibilityService() {
 
+    private var buttonCallback: AccessibilityButtonController.AccessibilityButtonCallback? = null
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // Can be used to inspect context if requested
+        // Accessibility events
     }
 
     override fun onInterrupt() {
@@ -18,7 +23,34 @@ class AnclaAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        instance = this
         Log.d(TAG, "AnclaAccessibilityService connected and ready")
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val controller = accessibilityButtonController
+            val callback = object : AccessibilityButtonController.AccessibilityButtonCallback() {
+                override fun onClicked(controller: AccessibilityButtonController?) {
+                    Log.d(TAG, "Accessibility button clicked! Launching Ancla voice...")
+                    launchAnclaVoice()
+                }
+
+                override fun onAvailabilityChanged(controller: AccessibilityButtonController?, available: Boolean) {
+                    Log.d(TAG, "Accessibility button availability changed: $available")
+                }
+            }
+            buttonCallback = callback
+            controller.registerAccessibilityButtonCallback(callback)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && buttonCallback != null) {
+            accessibilityButtonController.unregisterAccessibilityButtonCallback(buttonCallback!!)
+        }
+        if (instance == this) {
+            instance = null
+        }
     }
 
     /**

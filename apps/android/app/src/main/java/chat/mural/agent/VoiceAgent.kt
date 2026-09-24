@@ -25,6 +25,7 @@ class VoiceAgent(
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private var activeLanguage: String = "es-MX"
+    private var lastInteractionTime: Long = 0L
 
     var isListening: Boolean = false
         private set
@@ -32,6 +33,12 @@ class VoiceAgent(
         private set
     var isSpeaking: Boolean = false
         private set
+
+    fun isConversationActive(): Boolean = System.currentTimeMillis() - lastInteractionTime < 25000L
+
+    fun noteInteraction() {
+        lastInteractionTime = System.currentTimeMillis()
+    }
 
     init {
         mainHandler.post {
@@ -70,6 +77,7 @@ class VoiceAgent(
 
                 override fun onDone(utteranceId: String?) {
                     isSpeaking = false
+                    lastInteractionTime = System.currentTimeMillis()
                     if (shouldListen) {
                         scheduleRestart(250)
                     }
@@ -77,6 +85,7 @@ class VoiceAgent(
 
                 override fun onError(utteranceId: String?) {
                     isSpeaking = false
+                    lastInteractionTime = System.currentTimeMillis()
                     if (shouldListen) {
                         scheduleRestart(250)
                     }
@@ -91,6 +100,7 @@ class VoiceAgent(
     fun startListening(languageCode: String = "es-MX") {
         activeLanguage = languageCode
         shouldListen = true
+        lastInteractionTime = System.currentTimeMillis()
         mainHandler.post {
             startListeningInternal()
         }
@@ -249,14 +259,13 @@ class VoiceAgent(
 
         if (!bestText.isNullOrBlank()) {
             Log.d(TAG, "Recognized text: $bestText")
-            // Requirement: Only trigger if user says "ancla"
             val hasKeyword = bestText.contains("ancla", ignoreCase = true)
-            if (hasKeyword) {
-                // Extract clean command without keyword prefix
-                val command = bestText.replace(Regex("^(?:oye\\s+)?ancla\\s*,?\\s*", RegexOption.IGNORE_CASE), "").trim()
-                val finalPrompt = if (command.isBlank()) "ancla" else command
-                Log.d(TAG, "Keyword 'ancla' detected! Executing command: $finalPrompt")
-                onSpeechRecognized(finalPrompt)
+            val isFollowUp = isConversationActive()
+
+            if (hasKeyword || isFollowUp) {
+                lastInteractionTime = System.currentTimeMillis()
+                Log.d(TAG, "Command accepted (keyword=$hasKeyword, followUp=$isFollowUp): $bestText")
+                onSpeechRecognized(bestText)
             } else {
                 Log.d(TAG, "Ignored speech without 'ancla' keyword. Continuing listening...")
                 if (shouldListen && !isSpeaking) {
