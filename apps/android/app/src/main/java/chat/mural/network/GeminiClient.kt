@@ -12,13 +12,14 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 
 data class AgentDecision(
-    val action: String, // "open_app", "whatsapp", "open_maps", "device_diagnostics", "weather", "web_search", "reply"
+    val action: String, // "open_app", "youtube_search", "whatsapp", "discord", "open_maps", "device_diagnostics", "weather", "web_search", "reply"
     val speech: String,
     val appName: String? = null,
     val contact: String? = null,
     val message: String? = null,
     val destination: String? = null,
-    val searchQuery: String? = null
+    val searchQuery: String? = null,
+    val serverName: String? = null
 )
 
 class GeminiClient(
@@ -36,25 +37,28 @@ class GeminiClient(
             Analiza la petición del usuario y responde SIEMPRE en formato JSON con la siguiente estructura:
             {
               "thought": "breve razonamiento",
-              "action": "open_app" | "whatsapp" | "open_maps" | "device_diagnostics" | "weather" | "web_search" | "reply",
+              "action": "open_app" | "youtube_search" | "whatsapp" | "discord" | "open_maps" | "device_diagnostics" | "weather" | "web_search" | "reply",
               "parameters": {
-                "app_name": "nombre de la app o juego a abrir (ej. YouTube, WhatsApp, Free Fire, Ajustes, Cámara, Spotify)",
-                "contact": "contacto de whatsapp si aplica",
-                "message": "mensaje de whatsapp si aplica",
+                "app_name": "nombre de la app o juego a abrir (ej. Spotify, Cámara, Ajustes, Free Fire)",
+                "contact": "nombre del contacto tal cual lo dice el usuario (ej. Mamá, Carlos, Hermano, Alejandra)",
+                "message": "mensaje a enviar si aplica o null",
                 "destination": "lugar o ruta de mapas si aplica",
-                "search_query": "búsqueda web si aplica"
+                "search_query": "búsqueda en YouTube o web si aplica",
+                "server_name": "nombre del servidor, grupo o canal de Discord si aplica"
               },
               "speech": "Respuesta hablada natural, concisa y en español para el usuario (máximo 1 o 2 oraciones breves para TTS)."
             }
 
             Reglas:
-            - Si el usuario pide abrir, poner, ver, jugar o ejecutar cualquier aplicación o juego (ej. "¿puedes abrir YouTube?", "quiero ver videos", "pon Spotify", "vamos a jugar COD", "abre WhatsApp"), action="open_app" y app_name con el nombre.
-            - Si pide enviar un mensaje por WhatsApp, action="whatsapp".
-            - Si pide direcciones, rutas, tráfico o mapas, action="open_maps".
-            - Si pregunta por el estado del celular, batería, temperatura o si está lento/caliente, action="device_diagnostics".
-            - Si pregunta por el clima o si va a llover, action="weather".
-            - Si pide buscar en internet o google, action="web_search".
-            - Si es una pregunta de conocimiento general, conversación, ayuda o explicación, action="reply" con la respuesta en "speech".
+            - Búsquedas en YouTube: Si el usuario pide buscar videos, canciones o contenido en YouTube de cualquier forma natural (ej. "¿eres capaz de ir a YouTube y buscar física cuántica por favor?", "busca videos de risa en YouTube", "ponme en YouTube música de rock"), action="youtube_search" y search_query="término buscado".
+            - WhatsApp y Contactos: Si el usuario pide entrar al chat de alguien o mandar mensaje a un contacto (ej. "entra al chat de Carlos en WhatsApp", "mándale un WhatsApp a Mamá", "abre WhatsApp con Alejandra"), action="whatsapp", contact="nombre del contacto", message="mensaje si aplica o null".
+            - Discord: Si el usuario pide conectarse a Discord, a un canal de voz, servidor o grupo (ej. "conéctame a Discord al grupo de amigos", "vamos a Discord", "entra a Discord en el canal de voz"), action="discord", server_name="nombre del servidor/grupo si aplica".
+            - Abrir aplicaciones/juegos: Si pide abrir cualquier otra app o juego sin búsqueda (ej. "¿puedes abrir YouTube?", "vamos a jugar COD", "abre Spotify", "abre la Cámara"), action="open_app" y app_name con el nombre.
+            - Direcciones y Mapas: Si pide rutas, tráfico o cómo llegar, action="open_maps".
+            - Diagnósticos: Batería, temperatura o rendimiento del celular, action="device_diagnostics".
+            - Clima: Pronóstico del tiempo o lluvia, action="weather".
+            - Búsqueda web: action="web_search".
+            - Conversación general: action="reply".
             - La clave única para activarte es 'ancla'. Todo el lenguaje es natural, flexible e inteligente.
         """.trimIndent()
 
@@ -94,6 +98,7 @@ class GeminiClient(
             val message = params?.get("message")?.jsonPrimitive?.contentOrNull
             val destination = params?.get("destination")?.jsonPrimitive?.contentOrNull
             val searchQuery = params?.get("search_query")?.jsonPrimitive?.contentOrNull
+            val serverName = params?.get("server_name")?.jsonPrimitive?.contentOrNull
 
             AgentDecision(
                 action = action,
@@ -102,7 +107,8 @@ class GeminiClient(
                 contact = contact,
                 message = message,
                 destination = destination,
-                searchQuery = searchQuery
+                searchQuery = searchQuery,
+                serverName = serverName
             )
         } catch (e: Exception) {
             android.util.Log.e("GeminiClient", "Failed to parse agent JSON: ${result.text}", e)

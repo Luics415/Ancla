@@ -1043,17 +1043,31 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
 
                     var spokenText = decision.speech
                     when (decision.action) {
+                        "youtube_search" -> {
+                            val query = decision.searchQuery ?: clean
+                            val result = withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.searchYouTube(getApplication(), query)
+                            }
+                            spokenText = decision.speech.ifBlank { result.message }
+                        }
+                        "whatsapp" -> {
+                            val result = withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.openWhatsAppContact(getApplication(), decision.contact, decision.message)
+                            }
+                            spokenText = decision.speech.ifBlank { result.message }
+                        }
+                        "discord" -> {
+                            val result = withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.openDiscord(getApplication(), decision.serverName)
+                            }
+                            spokenText = decision.speech.ifBlank { result.message }
+                        }
                         "open_app" -> {
                             val appToOpen = decision.appName ?: clean
                             val result = withContext(Dispatchers.Main) {
                                 chat.mural.agent.DeviceAgent.openApp(getApplication(), appToOpen)
                             }
                             spokenText = decision.speech.ifBlank { result.message }
-                        }
-                        "whatsapp" -> {
-                            withContext(Dispatchers.Main) {
-                                chat.mural.agent.DeviceAgent.openWhatsApp(getApplication(), decision.message, decision.contact)
-                            }
                         }
                         "open_maps" -> {
                             val dest = decision.destination ?: clean

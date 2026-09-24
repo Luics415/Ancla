@@ -329,14 +329,23 @@ class AnclaAccessibilityService : AccessibilityService(), RecognitionListener, T
                     var finalSpeech = decision.speech
 
                     when (decision.action) {
+                        "youtube_search" -> {
+                            val query = decision.searchQuery ?: queryToProcess
+                            val result = DeviceAgent.searchYouTube(applicationContext, query)
+                            finalSpeech = decision.speech.ifBlank { result.message }
+                        }
+                        "whatsapp" -> {
+                            val result = DeviceAgent.openWhatsAppContact(applicationContext, decision.contact, decision.message)
+                            finalSpeech = decision.speech.ifBlank { result.message }
+                        }
+                        "discord" -> {
+                            val result = DeviceAgent.openDiscord(applicationContext, decision.serverName)
+                            finalSpeech = decision.speech.ifBlank { result.message }
+                        }
                         "open_app" -> {
                             val targetApp = decision.appName ?: queryToProcess
                             val result = DeviceAgent.openApp(applicationContext, targetApp)
                             finalSpeech = decision.speech.ifBlank { result.message }
-                        }
-                        "whatsapp" -> {
-                            DeviceAgent.openWhatsApp(applicationContext, decision.message, decision.contact)
-                            finalSpeech = decision.speech.ifBlank { "Abriendo WhatsApp..." }
                         }
                         "open_maps" -> {
                             val dest = decision.destination ?: queryToProcess

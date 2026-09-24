@@ -9,7 +9,9 @@ import android.net.Uri
 import android.os.BatteryManager
 import android.os.Build
 import android.os.PowerManager
+import android.provider.ContactsContract
 import android.provider.Settings
+import android.util.Log
 import java.net.URLEncoder
 import java.text.Normalizer
 
@@ -182,6 +184,153 @@ object DeviceAgent {
             }
         } catch (_: Exception) {
             openApp(context, "whatsapp").success
+        }
+    }
+
+    /**
+     * Finds a contact's phone number in device address book using normalized matching.
+     */
+    fun findContactPhoneNumber(context: Context, targetName: String): Pair<String, String>? {
+        if (targetName.isBlank()) return null
+        val cleanTarget = normalize(targetName)
+        val cr = context.contentResolver
+        val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
+        val projection = arrayOf(
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+            ContactsContract.CommonDataKinds.Phone.NUMBER
+        )
+
+        var bestMatchNumber: String? = null
+        var bestMatchName: String? = null
+        var bestScore = 0
+
+        try {
+            val cursor = cr.query(uri, projection, null, null, null)
+            cursor?.use {
+                val nameIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+                val numberIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+
+                while (it.moveToNext()) {
+                    val name = it.getString(nameIndex) ?: continue
+                    val number = it.getString(numberIndex) ?: continue
+                    val cleanName = normalize(name)
+
+                    if (cleanName == cleanTarget) {
+                        return Pair(name, cleanPhoneNumber(number))
+                    } else if (cleanName.startsWith(cleanTarget) && bestScore < 3) {
+                        bestMatchName = name
+                        bestMatchNumber = cleanPhoneNumber(number)
+                        bestScore = 3
+                    } else if (cleanName.contains(cleanTarget) && bestScore < 2) {
+                        bestMatchName = name
+                        bestMatchNumber = cleanPhoneNumber(number)
+                        bestScore = 2
+                    } else if (cleanTarget.contains(cleanName) && bestScore < 1) {
+                        bestMatchName = name
+                        bestMatchNumber = cleanPhoneNumber(number)
+                        bestScore = 1
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("DeviceAgent", "Error querying contacts: ${e.message}")
+        }
+
+        return if (bestMatchNumber != null && bestMatchName != null) {
+            Pair(bestMatchName, bestMatchNumber)
+        } else null
+    }
+
+    private fun cleanPhoneNumber(number: String): String {
+        return number.replace(Regex("[^0-9+]"), "")
+    }
+
+    /**
+     * Opens WhatsApp directly targeting a registered contact by name or generic.
+     */
+    fun openWhatsAppContact(context: Context, contactQuery: String?, message: String? = null): AppLaunchResult {
+        if (contactQuery.isNullOrBlank()) {
+            val opened = openWhatsApp(context, message)
+            return AppLaunchResult(opened, "WhatsApp", message = if (opened) "Abriendo WhatsApp..." else "No pude abrir WhatsApp.")
+        }
+
+        val found = findContactPhoneNumber(context, contactQuery)
+        return if (found != null) {
+            val (realName, phone) = found
+            val opened = openWhatsApp(context, message, phone)
+            val msg = if (!message.isNullOrBlank()) {
+                "Abriendo chat de $realName en WhatsApp con tu mensaje..."
+            } else {
+                "Abriendo chat de $realName en WhatsApp..."
+            }
+            AppLaunchResult(opened, "WhatsApp", "com.whatsapp", msg)
+        } else {
+            openWhatsApp(context, message)
+            AppLaunchResult(true, "WhatsApp", "com.whatsapp", "No encontré a \"$contactQuery\" en tus contactos, abriendo WhatsApp...")
+        }
+    }
+
+    /**
+     * Executes direct search in YouTube or opens relevant query.
+     */
+    fun searchYouTube(context: Context, query: String): AppLaunchResult {
+        return try {
+            val encoded = Uri.encode(query.trim())
+            val appIntent = Intent(Intent.ACTION_SEARCH).apply {
+                setPackage("com.google.android.youtube")
+                putExtra("query", query.trim())
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            if (appIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(appIntent)
+                AppLaunchResult(true, "YouTube", "com.google.android.youtube", "Buscando \"$query\" en YouTube...")
+            } else {
+                val uri = Uri.parse("https://www.youtube.com/results?search_query=$encoded")
+                val webIntent = Intent(Intent.ACTION_VIEW, uri).apply {
+                    setPackage("com.google.android.youtube")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                if (webIntent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(webIntent)
+                    AppLaunchResult(true, "YouTube", "com.google.android.youtube", "Buscando \"$query\" en YouTube...")
+                } else {
+                    val browserIntent = Intent(Intent.ACTION_VIEW, uri).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(browserIntent)
+                    AppLaunchResult(true, "YouTube Web", message = "Buscando \"$query\" en YouTube...")
+                }
+            }
+        } catch (e: Exception) {
+            AppLaunchResult(false, "YouTube", message = "No pude realizar la búsqueda en YouTube.")
+        }
+    }
+
+    /**
+     * Opens Discord or connects to voice / server.
+     */
+    fun openDiscord(context: Context, serverOrChannel: String? = null): AppLaunchResult {
+        return try {
+            val pm = context.packageManager
+            val intent = pm.getLaunchIntentForPackage("com.discord")
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                val msg = if (!serverOrChannel.isNullOrBlank()) {
+                    "Abriendo Discord para conectarte a $serverOrChannel..."
+                } else {
+                    "Abriendo Discord..."
+                }
+                AppLaunchResult(true, "Discord", "com.discord", msg)
+            } else {
+                val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://discord.com/channels/@me")).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(webIntent)
+                AppLaunchResult(true, "Discord Web", message = "Abriendo Discord en el navegador...")
+            }
+        } catch (e: Exception) {
+            AppLaunchResult(false, "Discord", message = "No pude abrir Discord.")
         }
     }
 
