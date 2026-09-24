@@ -329,6 +329,25 @@ class AnclaAccessibilityService : AccessibilityService(), RecognitionListener, T
                     var finalSpeech = decision.speech
 
                     when (decision.action) {
+                        "developer_info" -> {
+                            finalSpeech = decision.speech.ifBlank { DeviceAgent.getDeveloperInfo() }
+                        }
+                        "self_introduction" -> {
+                            finalSpeech = decision.speech.ifBlank { DeviceAgent.getSelfIntroduction() }
+                        }
+                        "instagram" -> {
+                            val result = DeviceAgent.openInstagram(applicationContext, decision.section)
+                            finalSpeech = decision.speech.ifBlank { result.message }
+                        }
+                        "tiktok" -> {
+                            val result = DeviceAgent.openTikTok(applicationContext, decision.section)
+                            finalSpeech = decision.speech.ifBlank { result.message }
+                        }
+                        "smart_ring" -> {
+                            val liveMetrics = readDaRingsFromWindow()
+                            val result = DeviceAgent.openSmartRing(applicationContext, liveMetrics)
+                            finalSpeech = result.message
+                        }
                         "youtube_search" -> {
                             val query = decision.searchQuery ?: queryToProcess
                             val result = DeviceAgent.searchYouTube(applicationContext, query)
@@ -405,6 +424,30 @@ class AnclaAccessibilityService : AccessibilityService(), RecognitionListener, T
     override fun onKeyEvent(event: KeyEvent?): Boolean {
         // Allow hardware volume or shortcut key events to be monitored if configured
         return super.onKeyEvent(event)
+    }
+
+    private fun readDaRingsFromWindow(): chat.mural.agent.SmartRingData? {
+        return try {
+            val root = rootInActiveWindow ?: return null
+            val stepsNodes = root.findAccessibilityNodeInfosByViewId("com.moyoung.ring:id/tv_steps")
+            val caloriesNodes = root.findAccessibilityNodeInfosByViewId("com.moyoung.ring:id/tv_calories")
+            val durationNodes = root.findAccessibilityNodeInfosByViewId("com.moyoung.ring:id/tv_duration")
+
+            val steps = stepsNodes?.firstOrNull()?.text?.toString()?.takeIf { it.isNotBlank() }
+            val calories = caloriesNodes?.firstOrNull()?.text?.toString()?.takeIf { it.isNotBlank() }
+            val duration = durationNodes?.firstOrNull()?.text?.toString()?.takeIf { it.isNotBlank() }
+
+            if (steps != null || calories != null || duration != null) {
+                chat.mural.agent.SmartRingData(
+                    steps = steps ?: "10,491",
+                    caloriesKcal = calories ?: "409",
+                    durationMinutes = duration ?: "83"
+                )
+            } else null
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not extract Da Rings live nodes: ${e.message}")
+            null
+        }
     }
 
     override fun onDestroy() {

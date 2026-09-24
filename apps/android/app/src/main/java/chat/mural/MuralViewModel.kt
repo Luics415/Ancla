@@ -1043,6 +1043,30 @@ class MuralViewModel(application: Application) : AndroidViewModel(application) {
 
                     var spokenText = decision.speech
                     when (decision.action) {
+                        "developer_info" -> {
+                            spokenText = decision.speech.ifBlank { chat.mural.agent.DeviceAgent.getDeveloperInfo() }
+                        }
+                        "self_introduction" -> {
+                            spokenText = decision.speech.ifBlank { chat.mural.agent.DeviceAgent.getSelfIntroduction() }
+                        }
+                        "instagram" -> {
+                            val result = withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.openInstagram(getApplication(), decision.section)
+                            }
+                            spokenText = decision.speech.ifBlank { result.message }
+                        }
+                        "tiktok" -> {
+                            val result = withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.openTikTok(getApplication(), decision.section)
+                            }
+                            spokenText = decision.speech.ifBlank { result.message }
+                        }
+                        "smart_ring" -> {
+                            val result = withContext(Dispatchers.Main) {
+                                chat.mural.agent.DeviceAgent.openSmartRing(getApplication())
+                            }
+                            spokenText = result.message
+                        }
                         "youtube_search" -> {
                             val query = decision.searchQuery ?: clean
                             val result = withContext(Dispatchers.Main) {

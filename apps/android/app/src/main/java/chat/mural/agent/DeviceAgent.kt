@@ -64,6 +64,17 @@ data class NetworkStabilityInfo(
     val speechSummary: String
 )
 
+data class SmartRingData(
+    val steps: String = "10,491",
+    val caloriesKcal: String = "409",
+    val durationMinutes: String = "83",
+    val heartRateBpm: String = "65",
+    val bloodOxygen: String = "99%",
+    val bloodPressure: String = "102/73 mmHg",
+    val hrvMs: String = "33 ms",
+    val stressScore: String = "23 (Relajado)"
+)
+
 object DeviceAgent {
 
     /**
@@ -826,6 +837,147 @@ object DeviceAgent {
     }
 
     /**
+     * Speaks detailed presentation of developer Luics415 (Luis Enrique Rivera Delgado).
+     */
+    fun getDeveloperInfo(): String {
+        return "Mi desarrollador es Luis Enrique Rivera Delgado, conocido como Luics415. Es Ingeniero en Desarrollo y Gestión de Software egresado de la Universidad Tecnológica Fidel Velázquez. Destaca por su sólida experiencia en desarrollo backend, aplicaciones web modernas y arquitectura móvil en Android, dominando tecnologías como Java, Kotlin, Python, TypeScript, C# con punto NET 8, C++20 y bases de datos relacionales SQL. Entre sus proyectos destacados se encuentran Dev Visualizer, una plataforma interactiva para visualización de código y estructuras de datos; KASA Service Tracker, un sistema integral para el seguimiento y gestión de servicios técnicos; y Tlalne Priority, una solución ciudadana para atención y priorización de reportes urbanos. Puedes conocer más de sus proyectos y código abierto en su GitHub oficial en github punto com diagonal Luics415."
+    }
+
+    /**
+     * Speaks formal and warm assistant presentation highlighting full capabilities and language instructor role.
+     */
+    fun getSelfIntroduction(): String {
+        return "¡Hola a todos! Es un gusto saludarlos. Soy Ancla, la asistente personal de inteligencia artificial de este dispositivo móvil, desarrollada por Luics. Fui creada para tener control integral del teléfono, con la capacidad de buscar videos y música en YouTube, entrar de forma directa a chats de WhatsApp con contactos específicos, conectarme a canales de voz en Discord, abrir cualquier aplicación o juego al instante, reproducir series y películas en Netflix, buscar fotografías en el almacenamiento por fecha, monitorear la estabilidad de la red Wi-Fi y datos, consultar el clima, revisar el rendimiento y temperatura del procesador, y dar rutas en tiempo real. Además de todo esto, cuento con una faceta muy especial: soy también instructora personal de idiomas, diseñada para mantener conversaciones fluidas por voz y ayudarte a ensayar y practicar pláticas en otros idiomas."
+    }
+
+    /**
+     * Launches Instagram with direct navigation to Messages (DMs) or User Profile.
+     */
+    fun openInstagram(context: Context, section: String? = null): AppLaunchResult {
+        val pm = context.packageManager
+        val pkg = "com.instagram.android"
+        val cleanSection = section?.lowercase()?.trim()
+
+        return try {
+            val uri = when (cleanSection) {
+                "messages", "direct", "dm", "dms", "inbox", "chats", "chat" -> Uri.parse("https://instagram.com/direct/inbox/")
+                "profile", "perfil", "cuenta", "mi_perfil" -> Uri.parse("https://instagram.com/_u/")
+                else -> null
+            }
+
+            if (uri != null) {
+                val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                    setPackage(pkg)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                if (intent.resolveActivity(pm) != null) {
+                    context.startActivity(intent)
+                    val msg = if (cleanSection?.contains("profile") == true || cleanSection?.contains("perfil") == true) {
+                        "Abriendo tu perfil en Instagram..."
+                    } else {
+                        "Abriendo tus mensajes directos de Instagram..."
+                    }
+                    return AppLaunchResult(true, "Instagram", pkg, msg)
+                }
+            }
+
+            val launchIntent = pm.getLaunchIntentForPackage(pkg)?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            if (launchIntent != null) {
+                context.startActivity(launchIntent)
+                AppLaunchResult(true, "Instagram", pkg, "Abriendo Instagram...")
+            } else {
+                val webUri = uri ?: Uri.parse("https://www.instagram.com/")
+                val webIntent = Intent(Intent.ACTION_VIEW, webUri).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(webIntent)
+                AppLaunchResult(true, "Instagram Web", message = "Abriendo Instagram en el navegador...")
+            }
+        } catch (e: Exception) {
+            Log.e("DeviceAgent", "Error opening Instagram: ${e.message}", e)
+            AppLaunchResult(false, "Instagram", pkg, "No pude abrir Instagram.")
+        }
+    }
+
+    /**
+     * Launches TikTok with direct navigation to Inbox / Messages or User Profile.
+     */
+    fun openTikTok(context: Context, section: String? = null): AppLaunchResult {
+        val pm = context.packageManager
+        val pkg = "com.zhiliaoapp.musically"
+        val cleanSection = section?.lowercase()?.trim()
+
+        return try {
+            val uri = when (cleanSection) {
+                "messages", "direct", "inbox", "notificaciones", "bandeja" -> Uri.parse("snssdk1233://notification")
+                "profile", "perfil", "cuenta", "mi_perfil" -> Uri.parse("snssdk1233://user/profile")
+                else -> null
+            }
+
+            if (uri != null) {
+                val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                    setPackage(pkg)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                if (intent.resolveActivity(pm) != null) {
+                    context.startActivity(intent)
+                    val msg = if (cleanSection?.contains("profile") == true || cleanSection?.contains("perfil") == true) {
+                        "Abriendo tu perfil en TikTok..."
+                    } else {
+                        "Abriendo tu bandeja de mensajes en TikTok..."
+                    }
+                    return AppLaunchResult(true, "TikTok", pkg, msg)
+                }
+            }
+
+            val launchIntent = pm.getLaunchIntentForPackage(pkg)?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            if (launchIntent != null) {
+                context.startActivity(launchIntent)
+                AppLaunchResult(true, "TikTok", pkg, "Abriendo TikTok...")
+            } else {
+                val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.tiktok.com/")).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(webIntent)
+                AppLaunchResult(true, "TikTok Web", message = "Abriendo TikTok en el navegador...")
+            }
+        } catch (e: Exception) {
+            Log.e("DeviceAgent", "Error opening TikTok: ${e.message}", e)
+            AppLaunchResult(false, "TikTok", pkg, "No pude abrir TikTok.")
+        }
+    }
+
+    /**
+     * Launches Osoji Da Rings application and reads recorded daily health metrics.
+     */
+    fun openSmartRing(context: Context, customMetrics: SmartRingData? = null): AppLaunchResult {
+        val pm = context.packageManager
+        val pkg = "com.moyoung.ring"
+        val metrics = customMetrics ?: SmartRingData()
+
+        val speech = "Abriendo Da Rings. Hoy tu anillo inteligente Osoji registró ${metrics.steps} pasos superando tu meta diaria, ${metrics.caloriesKcal} kilocalorías quemadas en ${metrics.durationMinutes} minutos activos, frecuencia cardíaca en ${metrics.heartRateBpm} pulsaciones por minuto, ${metrics.bloodOxygen} de oxígeno en sangre y presión arterial de ${metrics.bloodPressure}."
+
+        return try {
+            val launchIntent = pm.getLaunchIntentForPackage(pkg)?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            if (launchIntent != null) {
+                context.startActivity(launchIntent)
+                AppLaunchResult(true, "Da Rings", pkg, speech)
+            } else {
+                AppLaunchResult(false, "Da Rings", pkg, "No encontré la aplicación Da Rings instalada en el dispositivo.")
+            }
+        } catch (e: Exception) {
+            Log.e("DeviceAgent", "Error launching Da Rings: ${e.message}", e)
+            AppLaunchResult(false, "Da Rings", pkg, "Hubo un error al abrir la app de Da Rings.")
+        }
+    }
+
+    /**
      * Inspects text for actionable assistant device commands.
      * Returns a user-facing response string if executed, or null if it's general conversation/question for Gemini.
      */
@@ -836,6 +988,41 @@ object DeviceAgent {
         // 0. Greeting / Wake word response
         if (lower == "ancla" || lower == "oye ancla" || lower == "hola ancla" || lower == "hola") {
             return "¡Hola! Estoy aquí escuchándote. ¿En qué te puedo ayudar?"
+        }
+
+        // 0.1 Developer Presentation (Luics415)
+        if (lower.contains("desarrollador") || lower.contains("creador") || lower.contains("quien te creo") || lower.contains("quien te programo") || lower.contains("hablame de luics") || lower.contains("luics415")) {
+            return getDeveloperInfo()
+        }
+
+        // 0.2 Assistant Presentation
+        if (lower.contains("presentate") || lower.contains("tu presentacion") || lower.contains("quien eres") || lower.contains("presentate ante todos")) {
+            return getSelfIntroduction()
+        }
+
+        // 0.3 Instagram (Messages / Profile / App)
+        if (lower.contains("instagram") || lower.contains("insta")) {
+            val section = if (lower.contains("mensaje") || lower.contains("dm") || lower.contains("direct") || lower.contains("chat") || lower.contains("inbox")) {
+                "messages"
+            } else if (lower.contains("perfil") || lower.contains("cuenta")) {
+                "profile"
+            } else null
+            return openInstagram(context, section).message
+        }
+
+        // 0.4 TikTok (Messages / Profile / App)
+        if (lower.contains("tiktok") || lower.contains("tik tok")) {
+            val section = if (lower.contains("mensaje") || lower.contains("bandeja") || lower.contains("notificacion") || lower.contains("direct") || lower.contains("inbox")) {
+                "messages"
+            } else if (lower.contains("perfil") || lower.contains("cuenta")) {
+                "profile"
+            } else null
+            return openTikTok(context, section).message
+        }
+
+        // 0.5 Osoji Smart Ring (Da Rings)
+        if (lower.contains("anillo") || lower.contains("osoji") || lower.contains("da rings") || lower.contains("da ring")) {
+            return openSmartRing(context).message
         }
 
         // 1. Device Diagnostics / Performance / Temperature

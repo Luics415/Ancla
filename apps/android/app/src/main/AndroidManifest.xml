@@ -71,6 +71,9 @@
         <package android:name="com.spotify.music" />
         <package android:name="com.netflix.mediaclient" />
         <package android:name="com.discord" />
+        <package android:name="com.instagram.android" />
+        <package android:name="com.zhiliaoapp.musically" />
+        <package android:name="com.moyoung.ring" />
     </queries>
 
     <application android:label="Ancla" android:icon="@mipmap/ic_mural" android:roundIcon="@mipmap/ic_mural" android:theme="@style/Theme.Mural"
