@@ -2,6 +2,10 @@ package chat.mural.agent
 
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
+import android.media.AudioRecordingConfiguration
+import android.media.MediaRecorder
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -40,14 +44,40 @@ class VoiceAgent(
         lastInteractionTime = System.currentTimeMillis()
     }
 
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+    private var recordingCallback: AudioManager.AudioRecordingCallback? = null
+
     init {
         mainHandler.post {
             ensureSpeechRecognizer()
+            setupAudioInterruptionMonitoring()
             try {
                 tts = TextToSpeech(context.applicationContext, this)
             } catch (e: Exception) {
                 Log.e(TAG, "Error initializing TextToSpeech", e)
             }
+        }
+    }
+
+    private fun setupAudioInterruptionMonitoring() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && audioManager != null) {
+            val callback = object : AudioManager.AudioRecordingCallback() {
+                override fun onRecordingConfigChanged(configs: MutableList<AudioRecordingConfiguration>?) {
+                    val otherAppRecording = configs?.any { config ->
+                        try {
+                            config.clientAudioSource != MediaRecorder.AudioSource.VOICE_RECOGNITION
+                        } catch (_: Exception) {
+                            false
+                        }
+                    } == true
+                    if (otherAppRecording && (isListening || shouldListen)) {
+                        Log.d(TAG, "Another app started recording audio. Stopping Ancla microphone immediately.")
+                        stopListening()
+                    }
+                }
+            }
+            recordingCallback = callback
+            audioManager.registerAudioRecordingCallback(callback, mainHandler)
         }
     }
 
@@ -193,6 +223,15 @@ class VoiceAgent(
         shouldListen = false
         mainHandler.post {
             try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val cb = recordingCallback
+                    if (cb != null) {
+                        audioManager?.unregisterAudioRecordingCallback(cb)
+                        recordingCallback = null
+                    }
+                }
+            } catch (_: Exception) {}
+            try {
                 speechRecognizer?.destroy()
                 speechRecognizer = null
             } catch (_: Exception) {}
@@ -227,27 +266,27 @@ class VoiceAgent(
 
     override fun onError(error: Int) {
         isListening = false
+        shouldListen = false
         onListeningStateChanged(false)
         val errorMsg = when (error) {
             SpeechRecognizer.ERROR_NO_MATCH -> "No se detectó ninguna palabra."
             SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Tiempo de espera agotado."
-            SpeechRecognizer.ERROR_AUDIO -> "Error de grabación de audio."
+            SpeechRecognizer.ERROR_AUDIO -> "Error de grabación de audio (otra app en uso)."
             SpeechRecognizer.ERROR_CLIENT -> "Reconocimiento cancelado."
             SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Permiso de micrófono no concedido."
             SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Sin conexión para reconocimiento."
-            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Reconocedor ocupado."
+            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Reconocedor ocupado por otra app."
             SpeechRecognizer.ERROR_SERVER_DISCONNECTED -> "Servidor desconectado."
             else -> "Error de voz ($error)"
         }
         Log.w(TAG, "SpeechRecognizer error: $errorMsg ($error)")
 
-        // Reconnect only on server disconnection or busy
-        if (error == SpeechRecognizer.ERROR_SERVER_DISCONNECTED || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY) {
+        // Stop cleanly on timeout or when another app uses the mic.
+        // Never loop or flicker the microphone on/off.
+        if (error == SpeechRecognizer.ERROR_AUDIO || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY) {
             try { speechRecognizer?.destroy() } catch (_: Exception) {}
             speechRecognizer = null
-            if (shouldListen && !isSpeaking) scheduleRestart(600)
-        } else if (shouldListen && !isSpeaking) {
-            scheduleRestart(250)
+            Log.d(TAG, "Microphone released immediately due to external audio usage.")
         }
     }
 
