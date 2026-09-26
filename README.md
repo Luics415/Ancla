@@ -135,6 +135,92 @@ Ancla cuenta con módulos específicos que incluyen objetivos pedagógicos, pron
 
 ---
 
+## ⚓ Ancla Developer Suite: Control de Proyectos, Jules, Workspace, Empleo & BTS Edition
+
+Ancla cuenta con una **suite completa de asistencia y control técnico** integrada directamente en este entorno para administrar tus proyectos de GitHub, interactuar con **Google Jules**, supervisar tus cuentas de búsqueda de empleo y gestionar el ecosistema **Google Workspace**, todo potenciado con un **Motor de Memoria Dinámica** y la experiencia interactiva **BTS ARMY Edition (7777)**.
+
+### 📊 Diagrama de Arquitectura Global
+
+```mermaid
+flowchart TD
+    User([Usuario / Desarrollador]) -->|Comandos Naturales| AnclaCore[Ancla Core Orchestrator]
+
+    subgraph GitHub_Jules [1. Proyectos de GitHub & Google Jules]
+        AnclaCore --> GHManager[GitHub Manager]
+        AnclaCore --> JulesBridge[Google Jules Bridge]
+        GHManager --> GHRepos[(24 Repos Públicos Luics415)]
+        GHManager --> GHStars[(16 Repositorios Favoritos)]
+        JulesBridge --> JulesCLI[@google/jules CLI & Sessions]
+    end
+
+    subgraph Mobile_Job [2. Dispositivo Móvil & Monitor de Empleo]
+        AnclaCore --> JobTracker[Job Tracker ADB Engine]
+        JobTracker --> PhoneDevice[(Vivo V2314 por USB Debugging)]
+        PhoneDevice --> Apps[LinkedIn, OCC, Computrabajo, Indeed, Glassdoor]
+    end
+
+    subgraph Google_Hub [3. Google Workspace & Ecosistema]
+        AnclaCore --> GHub[Google Hub Services]
+        GHub --> GSuite[Gmail, Calendar, Meet, Drive, NotebookLM, Analytics]
+        GHub --> DeviceIntent[Lanzamiento Directo de Apps en Celular]
+    end
+
+    subgraph Memory_BTS [4. Memoria Dinámica & BTS Experience]
+        AnclaCore --> MemoryEngine[Memory & Delta Engine]
+        AnclaCore --> BTSEngine[BTS Experience: Unlock BTS / 7777]
+        MemoryEngine --> AnclaMemory[(ancla_memory.json)]
+        BTSEngine --> BorahaeAesthetic[Estética Púrpura, Sabiduría & Motivación]
+    end
+
+    AnclaCore --> ResponseDisplay([Reporte Inteligente en Chat / Terminal])
+```
+
+---
+
+### 🧠 Ciclo de Aprendizaje Continuo y Detección de Deltas
+
+```mermaid
+flowchart LR
+    A[Consulta del Usuario] --> B[Memoria de Ancla]
+    B --> C{¿Hubo cambios?}
+    C -->|Sí| D[Identifica Nuevos Commits / Tareas Jules / Alertas Empleo]
+    C -->|No| E[Reporta Estabilidad del Proyecto / Sin Novedades]
+    D --> F[Sugerencia Proactiva Contextual]
+    E --> F
+    F --> G[Actualiza Snapshot y Guarda Aprendizaje]
+```
+
+---
+
+### 💜 Experiencia Interactiva BTS ("Unlock BTS" / "7777")
+
+```mermaid
+flowchart TD
+    Trigger([Comando: 'Unlock BTS' o '7777']) --> BTSEngine[BTSExperience Manager]
+    BTSEngine --> ModeToggle{Alternar Modo}
+    ModeToggle -->|Activar| PurpleAesthetic[Paleta Borahae Violet #9B59B6]
+    PurpleAesthetic --> ASCIIBanner[Banner Crest de Ancla x BTS]
+    ASCIIBanner --> MemberWisdom[Sabiduría de los 7 Miembros RM, Jin, SUGA, J-Hope, Jimin, V, Jung Kook]
+    MemberWisdom --> HighEnergy[Respuestas con Motivación Continua y Reconocimiento de GX-Pets]
+```
+
+---
+
+### 🕹️ Comandos Disponibles de Ancla
+
+| Comando | Acción Realizada |
+| :--- | :--- |
+| **`"Ancla, ¿cómo van mis proyectos?"`** | Escaneo en vivo de los 24 repos públicos de `Luics415`, favoritos, últimos commits y estado de Jules. |
+| **`"Háblame de mi proyecto [nombre]"`** | Ficha detallada (QRVoxelStudio, Dev-Visualizer, AnchorGrid, etc.), commits, tareas de Jules y deltas de memoria. |
+| **`"¿Qué proyectos están en Stars/Favoritos?"`** | Lista los 16 repositorios favoritos en tu GitHub con URLs y lenguajes. |
+| **`"¿Cómo van mis cuentas de buscar empleo?"`** | Extrae en tiempo real eventos y notificaciones push desde tu teléfono conectado (`Vivo V2314`) para LinkedIn, OCC, Computrabajo, Indeed y Glassdoor. |
+| **`"Revisa mis reuniones de Google Meet y agenda"`** | Muestra eventos del día con enlaces directos de Meet y sincronización de fuentes documentales con NotebookLM. |
+| **`"Abre [gmail/drive/calendar/photos] en mi celular"`** | Lanza automáticamente la app en tu teléfono conectado vía ADB. |
+| **`"Ancla, recuerda que [dato/preferencia]"`** | Guarda una nota o preferencia en su memoria persistente a largo plazo. |
+| **`"Unlock BTS"` / `"7777"`** | **Easter Egg:** Activa/Desactiva la experiencia interactiva BTS ARMY Edition con estética Borahae y motivación técnica. |
+
+---
+
 ## 🛠️ Tecnologías Utilizadas
 
 - **Frontend:** Kotlin, Jetpack Compose, Material3, Coroutines, Flow.

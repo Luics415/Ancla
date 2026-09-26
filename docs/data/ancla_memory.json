@@ -1,0 +1,131 @@
+{
+  "profile": "Luics415",
+  "created_at": "2026-09-26T15:21:42.453950",
+  "query_counter": 16,
+  "learned_insights": [
+    "El usuario administra 24 repositorios públicos y 16 en favoritos.",
+    "Cuenta de Google Jules vinculada con alerivera877@gmail.com con 31 repositorios.",
+    "Dispositivo móvil principal: Vivo V2314 con aplicaciones de empleo y chat.mural.android.",
+    "Proyectos clave de alta atención: QRVoxelStudio, Dev-Visualizer, AnchorGrid, MenuOrders.",
+    "estoy priorizando la optimizacion de qrvoxelstudio para github pages",
+    "me enfoco en flutter y jetpack compose",
+    "Experiencia interactiva BTS ARMY Edition (7777 / Borahae) desbloqueada por el usuario."
+  ],
+  "project_snapshots": {
+    "QRVoxelStudio": {
+      "last_commit": "feat: preparar despliegue en GitHub Pages, ajustar vigencias y diseño de QR vencido",
+      "updated_at": "2026-09-22T02:08:21Z",
+      "last_checked": "2026-09-26T15:22:36.137311",
+      "check_count": 2
+    }
+  },
+  "job_snapshots": {},
+  "interaction_history": [
+    {
+      "timestamp": "2026-09-26T15:21:52.434659",
+      "query_type": "projects_overview",
+      "details": {
+        "count": 24
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:22:11.919093",
+      "query_type": "single_project",
+      "details": {
+        "repo": "QRVoxelStudio"
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:22:36.137311",
+      "query_type": "single_project",
+      "details": {
+        "repo": "QRVoxelStudio"
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:22:54.994068",
+      "query_type": "jobs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-09-26T15:22:59.671737",
+      "query_type": "projects_overview",
+      "details": {
+        "count": 24
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:22:59.994267",
+      "query_type": "stars",
+      "details": {
+        "count": 16
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:23:32.692049",
+      "query_type": "jobs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-09-26T15:23:37.260340",
+      "query_type": "projects_overview",
+      "details": {
+        "count": 24
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:23:37.586913",
+      "query_type": "stars",
+      "details": {
+        "count": 16
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:31:36.385489",
+      "query_type": "projects_overview",
+      "details": {
+        "count": 24
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:31:56.444805",
+      "query_type": "jobs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-09-26T15:32:01.636252",
+      "query_type": "projects_overview",
+      "details": {
+        "count": 24
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:32:01.974279",
+      "query_type": "stars",
+      "details": {
+        "count": 16
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:32:29.711729",
+      "query_type": "jobs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-09-26T15:32:35.497600",
+      "query_type": "projects_overview",
+      "details": {
+        "count": 24
+      }
+    },
+    {
+      "timestamp": "2026-09-26T15:32:35.817097",
+      "query_type": "stars",
+      "details": {
+        "count": 16
+      }
+    }
+  ],
+  "bts_mode_unlocked": true,
+  "bts_mode_active": true
+}
