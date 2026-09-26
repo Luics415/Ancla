@@ -57,7 +57,8 @@ class MinutePurchaseSheetTest {
                 true, { purchases += it }, {}, {}, {})
         } }
         compose.onNodeWithText("About 20 minutes", useUnmergedTree = true).performScrollTo().assertIsDisplayed()
-        for (label in listOf("For AI usage", "Mural fee (15%)", "Estimated payment fee", "Payment cost buffer")) {
+        val targetContext = InstrumentationRegistry.getInstrumentation().targetContext
+        for (label in listOf("For AI usage", targetContext.getString(R.string.paid_mural_fee, "15"), "Estimated payment fee", "Payment cost buffer")) {
             compose.onNodeWithText(label, useUnmergedTree = true).performScrollTo().assertIsDisplayed()
         }
         compose.onNodeWithTag("minute-purchase-pack-synthetic-value").performScrollTo().performClick()

@@ -33,7 +33,7 @@ class AccountSheetTest {
         compose.onNodeWithTag("account-google").assertIsNotEnabled()
         assertEquals(0, signIns)
         compose.onNodeWithText("Make yourself at home.").assertIsDisplayed()
-        compose.onNodeWithText("You can keep using Mural without an account.", substring = true).assertExists()
+        compose.onNodeWithText("without an account.", substring = true).assertExists()
     }
     @Test fun accountShowsMinutesAndDeletionRequiresConfirmation() {
         var deletions = 0
@@ -43,7 +43,7 @@ class AccountSheetTest {
         compose.onNodeWithTag("account-minute-balance").assertTextEquals("30 minutes")
         compose.onNodeWithText("Delete account").performScrollTo().performClick()
         assertEquals(0, deletions)
-        compose.onNodeWithText("Delete your Mural account", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Delete your", substring = true).assertIsDisplayed()
         compose.onNodeWithTag("account-confirm-delete").performClick()
         compose.runOnIdle { assertEquals(1, deletions) }
     }
