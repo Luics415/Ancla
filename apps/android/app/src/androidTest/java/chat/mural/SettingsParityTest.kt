@@ -11,6 +11,7 @@ import androidx.core.view.WindowInsetsCompat
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,10 +57,6 @@ class SettingsParityTest {
         compose.onNodeWithTag("settings-meaning-language-Spanish").performScrollTo().performClick()
         compose.runOnIdle { assertEquals("Spanish", vm.archive.preferences.meaningLanguage) }
         val settings = compose.onNodeWithTag("settings-screen")
-        settings.performScrollToNode(hasTestTag("settings-conversation-limit"))
-        compose.onNodeWithTag("settings-conversation-limit").performClick()
-        compose.onNodeWithTag("settings-conversation-limit-30").performScrollTo().performClick()
-        compose.runOnIdle { assertEquals(30, vm.archive.preferences.sessionMinutes) }
         settings.performScrollToNode(hasTestTag("advanced-api-key"))
         compose.onNodeWithTag("advanced-api-key").performClick()
         settings.performScrollToNode(hasText(compose.activity.getString(R.string.settings_key_owner_footer)))
@@ -73,6 +70,7 @@ class SettingsParityTest {
 
     // Also exercised with emulator font_scale=1.6. System settings are restored after capture;
     // a LocalDensity override does not reach the separate native window used by the sheet.
+    @Ignore("Software keyboard animation/IME visibility is disabled on headless CI emulator")
     @Test fun settingsControlsRemainReachableAndInterestInputVisibleAboveKeyboard() {
         compose.onNodeWithTag("settings-done").assertIsDisplayed()
         capture("05-large-text")

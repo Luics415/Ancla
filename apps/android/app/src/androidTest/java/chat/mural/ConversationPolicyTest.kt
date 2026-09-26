@@ -44,6 +44,7 @@ class ConversationPolicyTest {
         val dir = File(compose.activity.filesDir, "conversation-policy").apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { auto.takeScreenshot()!!.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
+    @Ignore("Utterance reporting removed from talk screen in Ancla")
     @Test fun countdownIsVisibleAndTypingClearsTheWarning() {
         compose.runOnIdle {
             state("session", SessionRecord(languageID = vm.language.id, fragments = mutableListOf(

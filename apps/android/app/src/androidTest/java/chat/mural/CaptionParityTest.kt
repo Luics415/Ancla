@@ -29,6 +29,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
 /** Real activity, caption taps and request construction, with offline HTTP responses in the isolated test app. */
+@Ignore("Mural caption UI was replaced by clean Ancla AI assistant in 8a9ea37")
 @RunWith(AndroidJUnit4::class)
 class CaptionParityTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()

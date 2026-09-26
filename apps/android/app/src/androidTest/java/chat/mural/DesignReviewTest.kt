@@ -57,7 +57,7 @@ class DesignReviewTest {
         compose.onNodeWithTag("onboarding-continue").performClick()
         compose.onNodeWithTag("ai-consent-decline").performClick()
         compose.onNodeWithTag("start-conversation").assertIsDisplayed()
-        compose.onNodeWithTag("meaning-caption").assertIsDisplayed()
+        compose.onNodeWithTag("conversation-status").assertIsDisplayed()
         val nav = compose.onNodeWithTag("floating-navigation").fetchSemanticsNode().boundsInRoot
         val root = compose.onRoot().fetchSemanticsNode().boundsInRoot
         assertTrue(nav.width < root.width * .9f)

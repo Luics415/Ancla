@@ -44,6 +44,7 @@ class StartupErrorTest {
         MuralViewModel::class.java.getDeclaredMethod("presentError", Throwable::class.java, Int::class.javaPrimitiveType)
             .apply { isAccessible = true }.invoke(vm, error, R.string.error_voice_connect_failed)
     }
+    @Ignore("AccountSheet removed in Ancla 100% free mode (commit 17fde9d)")
     @Test fun rejectedSignInOpensExistingAccountSheetAndClearsRecoveryState() {
         fail(HostedFailure.Http(401, "sign_in_required", reference = "0123abcdef45"))
         compose.onNodeWithText(compose.activity.getString(R.string.hosted_sign_in_again), substring = true).assertIsDisplayed()

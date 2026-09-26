@@ -33,6 +33,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.Assert.*
+import org.junit.Ignore
 import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
 import org.junit.runner.RunWith
@@ -40,6 +41,7 @@ import org.junit.runners.model.Statement
 import java.io.File
 
 /** English store UI with Spanish learning fixtures, plus a Spanish layout regression. */
+@Ignore("Store screenshot captions removed in Ancla (commit 8a9ea37)")
 @RunWith(AndroidJUnit4::class)
 @SdkSuppress(minSdkVersion = 33)
 class PlayStoreCaptureTest {
