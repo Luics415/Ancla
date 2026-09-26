@@ -177,7 +177,7 @@
     <string name="settings_voice_estimate_label">Estimación de voz</string>
     <string name="settings_search_calls_label">Búsquedas registradas</string>
     <string name="settings_usage_billing_link">Uso y facturación de OpenAI</string>
-    <string name="settings_usage_footer">Ancla es 100% gratuito y sin límites para tu aprendizaje personal. No hay cobros ni compras en la aplicación.</string>
+    <string name="settings_usage_footer" formatted="false">Ancla es 100% gratuito y sin límites para tu aprendizaje personal. No hay cobros ni compras en la aplicación.</string>
     <string name="settings_section_ai_permission">Permiso para IA</string>
     <string name="settings_ai_consent_accepted">Aceptado para esta versión</string>
     <string name="settings_ai_consent_not_accepted">No aceptado</string>

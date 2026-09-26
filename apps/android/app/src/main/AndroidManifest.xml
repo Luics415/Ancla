@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Red e Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -47,7 +48,9 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
 
     <!-- Consultas de aplicaciones instaladas -->
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
 
     <queries>
         <intent>
@@ -112,5 +115,17 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
         </service>
+
+        <!-- Receptor de comandos de voz en segundo plano para Bio Gesture Control -->
+        <receiver
+            android:name=".service.AnclaVoiceReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="chat.ancla.ACTION_TOGGLE_VOICE" />
+                <action android:name="chat.ancla.ACTION_START_LISTENING" />
+                <action android:name="chat.mural.ACTION_TOGGLE_VOICE" />
+                <action android:name="chat.mural.ACTION_START_LISTENING" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

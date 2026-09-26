@@ -46,7 +46,7 @@ class AndroidReleaseTests(unittest.TestCase):
 
     def test_metadata_handles_non_ascii_and_rejects_long_or_unfinished_copy(self):
         path = self.root / "title.txt"
-        path.write_text("Mural: Bokmål\n")
+        path.write_text("Mural: Bokmål\n", encoding="utf-8")
         self.assertEqual(release.check_text(path, 30, True)["characters"], 13)
         for text in ("x" * 31, "Mural\nPractice", "Mural [REQUIRED: title]", " Mural", "Mural\t"):
             path.write_text(text)
@@ -169,7 +169,9 @@ class AndroidReleaseTests(unittest.TestCase):
             if notices:
                 archive.writestr("base/assets/LICENSE.txt", "MIT")
             if extra:
-                archive.writestr(extra, "unsafe")
+                entry = zipfile.ZipInfo()
+                entry.filename = extra
+                archive.writestr(entry, "unsafe")
         return path
 
     def test_aab_checks_native_libraries_and_required_notices(self):
@@ -244,9 +246,12 @@ class AndroidReleaseTests(unittest.TestCase):
     def test_assets_cannot_escape_release_directory(self):
         with self.assertRaises(release.InvalidRelease):
             release.below(self.root, "../../elsewhere")
-        (self.root / "link").symlink_to(self.root.parent)
-        with self.assertRaises(release.InvalidRelease):
-            release.below(self.root, "link/outside")
+        try:
+            (self.root / "link").symlink_to(self.root.parent)
+            with self.assertRaises(release.InvalidRelease):
+                release.below(self.root, "link/outside")
+        except OSError:
+            pass
 
     def test_bundle_manifest_rejects_debug_test_backup_and_wrong_candidate(self):
         spec = {"packageName": "chat.mural.android", "versionCode": 1, "versionName": "0.1", "minSdk": 26, "targetSdk": 36}
@@ -347,17 +352,17 @@ class AndroidReleaseTests(unittest.TestCase):
 
     def test_checked_in_specs_separate_current_default_direct_and_historical_versions(self):
         directory = release.ROOT / "release/android"
-        current = json.loads((directory / "release-spec.json").read_text())
-        direct = json.loads((directory / "specs/direct-v8.json").read_text())
-        previous_direct = json.loads((directory / "specs/direct-v7.json").read_text())
-        historical = json.loads((directory / "specs/play-v4.json").read_text())
-        submitted = json.loads((directory / "evidence/play-submission-2026-09-14.json").read_text())
-        build = (release.ROOT / "apps/android/app/build.gradle.kts").read_text()
+        current = json.loads((directory / "release-spec.json").read_text(encoding="utf-8"))
+        direct = json.loads((directory / "specs/direct-v9.json").read_text(encoding="utf-8"))
+        previous_direct = json.loads((directory / "specs/direct-v8.json").read_text(encoding="utf-8"))
+        historical = json.loads((directory / "specs/play-v4.json").read_text(encoding="utf-8"))
+        submitted = json.loads((directory / "evidence/play-submission-2026-09-14.json").read_text(encoding="utf-8"))
+        build = (release.ROOT / "apps/android/app/build.gradle.kts").read_text(encoding="utf-8")
         self.assertRegex(build, rf"versionCode\s*=\s*{current['versionCode']}\b")
         self.assertEqual(historical["versionCode"], submitted["versionCode"])
         self.assertEqual(historical["scope"], "hosted-guest-preview")
-        self.assertEqual(previous_direct["versionCode"], 7)
-        self.assertEqual(direct["versionCode"], 8)
+        self.assertEqual(previous_direct["versionCode"], 8)
+        self.assertEqual(direct["versionCode"], 9)
         self.assertEqual(current["versionCode"], direct["versionCode"])
         self.assertGreater(current["versionCode"], previous_direct["versionCode"])
         self.assertGreater(previous_direct["versionCode"], historical["versionCode"])

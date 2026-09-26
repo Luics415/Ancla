@@ -177,7 +177,7 @@
     <string name="settings_voice_estimate_label">Voice estimate</string>
     <string name="settings_search_calls_label">Search calls recorded</string>
     <string name="settings_usage_billing_link">OpenAI usage and billing</string>
-    <string name="settings_usage_footer">Ancla is 100% free and unlimited for your personal learning. There are no fees or in-app purchases.</string>
+    <string name="settings_usage_footer" formatted="false">Ancla is 100% free and unlimited for your personal learning. There are no fees or in-app purchases.</string>
     <string name="settings_section_ai_permission">AI permission</string>
     <string name="settings_ai_consent_accepted">Accepted for this version</string>
     <string name="settings_ai_consent_not_accepted">Not accepted</string>

@@ -133,21 +133,33 @@ class AnclaAccessibilityService : AccessibilityService(), RecognitionListener, T
         }
     }
 
+    fun startVoice() {
+        if (!isListening && !isSpeaking) {
+            Log.i(TAG, "startVoice: Activating Ancla background voice...")
+            vibrateFeedback(longArrayOf(0, 60)) // One clean buzz = on
+            val greeting = "Luics, te escucho fuerte y claro."
+            speakGreeting(greeting)
+        } else {
+            Log.i(TAG, "startVoice: Already listening or speaking.")
+        }
+    }
+
+    fun stopVoice() {
+        Log.i(TAG, "stopVoice: Deactivating Ancla background voice...")
+        stopListening()
+        stopSpeaking()
+        vibrateFeedback(longArrayOf(0, 40, 60, 40)) // Two short buzzes = off
+    }
+
     /**
      * Toggles Ancla on or off when the user activates their native Android accessibility shortcut.
      * Operates 100% in the background without opening MainActivity.
      */
     fun toggleVoice() {
         if (isListening || isSpeaking) {
-            Log.i(TAG, "toggleVoice: Deactivating Ancla background voice...")
-            stopListening()
-            stopSpeaking()
-            vibrateFeedback(longArrayOf(0, 40, 60, 40)) // Two short buzzes = off
+            stopVoice()
         } else {
-            Log.i(TAG, "toggleVoice: Activating Ancla background voice...")
-            vibrateFeedback(longArrayOf(0, 60)) // One clean buzz = on
-            val greeting = "Luics, te escucho fuerte y claro."
-            speakGreeting(greeting)
+            startVoice()
         }
     }
 
